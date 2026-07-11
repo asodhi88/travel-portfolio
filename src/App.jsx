@@ -11,9 +11,6 @@ export default function App() {
         <Link to="/" className="site-title">
           Travel Portfolio
         </Link>
-        <nav>
-          <Link to="/admin">Admin</Link>
-        </nav>
       </header>
 
       <main>
