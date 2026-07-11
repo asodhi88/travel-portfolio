@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm install)",
+      "PowerShell(npm run build)",
+      "PowerShell(git init -q)",
+      "PowerShell(git add -A)",
+      "PowerShell(git check-ignore .env.local)",
+      "PowerShell(git rm --cached -q .claude/settings.local.json)"
+    ]
+  }
+}
