@@ -1,7 +1,6 @@
 import { useLayoutEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home.jsx'
-import PhotoDetail from './pages/PhotoDetail.jsx'
 import PlaceGallery from './pages/PlaceGallery.jsx'
 import Admin from './pages/Admin.jsx'
 import { ScrollProvider, useReducedMotion } from './lib/scroll.jsx'
@@ -49,7 +48,6 @@ export default function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/photo/:slug" element={<PhotoDetail />} />
             <Route path="/place/:slug" element={<PlaceGallery />} />
             <Route path="/admin" element={<Admin />} />
           </Routes>

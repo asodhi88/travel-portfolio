@@ -136,7 +136,7 @@ const clamp = (v, min, max) => Math.min(Math.max(v, min), max)
  * The DOM stays the source of truth: it does the layout, the measurement, the
  * links and the accessible names. This only paints. The canvas is
  * `pointer-events: none`, so a click on a plane lands on the real <a>
- * underneath it and routes to /photo/:slug the ordinary way — which is also why
+ * underneath it and routes to /place/:slug the ordinary way — which is also why
  * hover can be read straight off the DOM.
  *
  * @param {{

@@ -236,7 +236,7 @@ button:disabled {
 }
 
 /* ==========================================================================
-   Public pages (Home, PhotoDetail, PlaceGallery)
+   Public pages (Home, PlaceGallery)
    Dark, photograph-forward. The only two colors are the background and text;
    all color comes from the photographs themselves.
    ========================================================================== */
@@ -353,14 +353,14 @@ body.public button:focus-visible {
   filter: grayscale(0);
 }
 
-/* ---- Chrome (Home + PhotoDetail) ---- */
+/* ---- Chrome (Home + PlaceGallery) ---- */
 
 /* Fixed, so these stay put while the page travels underneath, and above the
-   canvas, which sits at z-index 1. The Home wordmark and the PhotoDetail back
+   canvas, which sits at z-index 1. The Home wordmark and the gallery's back
    link occupy the same corner on their respective pages and read the same way,
    so they're one rule. */
 .wordmark,
-.photo-back {
+.page-back {
   position: fixed;
   top: var(--gutter);
   left: var(--gutter);
@@ -372,7 +372,7 @@ body.public button:focus-visible {
 }
 
 .wordmark:hover,
-.photo-back:hover {
+.page-back:hover {
   opacity: 0.6;
 }
 
@@ -423,73 +423,36 @@ body.public button:focus-visible {
   height: min(calc(var(--strip-h) * 1.4), 70vh);
 }
 
-/* ---- PhotoDetail ---- */
-.photo-detail {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 48px;
-  padding: 96px var(--gutter);
-}
-
-.photo-hero {
-  width: min(80vw, 1100px);
-  max-height: 82vh;
-  object-fit: cover;
-  display: block;
-}
-
-.photo-body {
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 32px;
-}
-
-.photo-description {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.7;
-  opacity: 0.7;
-}
-
-.explore-link {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.explore-link:hover {
-  text-decoration: underline;
-}
-
 /* ---- PlaceGallery ---- */
+
+/* Top padding clears the fixed back link and ruler, so the place's name is the
+   first thing in the page's own flow. */
 .place-gallery {
   min-height: 100vh;
-  padding: var(--gutter);
+  padding: calc(var(--gutter) * 2.5) var(--gutter) var(--gutter);
 }
 
-.gallery-back {
-  display: inline-block;
+/* A gap rather than a margin on the title, so a place with no description
+   doesn't leave a hole above its photographs. */
+.gallery-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 48px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.4;
-  transition: opacity 0.3s ease;
-}
-
-.gallery-back:hover {
-  opacity: 0.7;
 }
 
 .gallery-title {
-  margin: 0 0 48px;
+  margin: 0;
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 400;
+}
+
+.gallery-description {
+  margin: 0;
+  max-width: 600px;
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.7;
 }
 
 .gallery-grid {
@@ -520,15 +483,6 @@ body.public button:focus-visible {
 @media (max-width: 768px) {
   body.public {
     --gutter: 20px;
-  }
-
-  .photo-hero {
-    width: 90vw;
-    max-height: 70vh;
-  }
-
-  .photo-detail {
-    padding: 64px var(--gutter);
   }
 
   .gallery-grid {

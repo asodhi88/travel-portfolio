@@ -85,7 +85,7 @@ export default function Carousel({ places }) {
         {places.map((place) => (
           <Link
             key={place.slug}
-            to={`/photo/${place.slug}`}
+            to={`/place/${place.slug}`}
             className="strip"
             aria-label={place.name}
             ref={setStripRef(place.slug)}

@@ -17,9 +17,12 @@ Cloudinary (image hosting).
 | Path            | Page          | Purpose                                            |
 | --------------- | ------------- | -------------------------------------------------- |
 | `/`             | Home          | Horizontal row of place strips (`Carousel`)        |
-| `/photo/:slug`  | PhotoDetail   | Hero image, description, ruler, link to the gallery |
-| `/place/:slug`  | PlaceGallery  | Place name + responsive grid of all images         |
+| `/place/:slug`  | PlaceGallery  | Place name + every image uploaded for it           |
 | `/admin`        | Admin         | Login, create/delete places, upload/manage images  |
+
+There are two public pages, not three: a strip on Home links straight to that
+place's gallery. An intermediate per-photo page used to sit between them, but it
+only ever showed the hero image again and a link onwards, so it was removed.
 
 The public pages share a dark, photograph-forward design, scoped to a `public`
 class on `<body>` so it never touches Admin's light theme.
@@ -32,8 +35,8 @@ no names, no captions, no index counter anywhere on the page. Each place's name
 reaches screen readers through its link's `aria-label` and nothing else.
 
 Strips sit in greyscale at rest and turn to their real colour on hover (or
-keyboard focus). Clicking one opens `/photo/:slug` — plainly, with no transition
-animation.
+keyboard focus). Clicking one opens that place's gallery at `/place/:slug` —
+plainly, with no transition animation.
 
 ### Scrolling
 
@@ -84,13 +87,23 @@ click lands on the real `<a>` underneath.
   and without Lenis mapping the wheel across, a horizontal row would be
   unreachable by an ordinary scroll gesture.
 
-## PhotoDetail
+## PlaceGallery
 
-The opened photograph, with a description and a link through to the place's full
-gallery. It carries the same numberless ruler as Home, top-centre, with the tick
-for this photo lit — which is why the page fetches the whole ordered list of
-places rather than just this one: it needs to know how many there are and where
-this one sits among them.
+The page behind Home, and the only one: it opens with the place's name, followed
+by every photograph uploaded for that place in a responsive grid. The hero is
+simply whichever of those images is flagged as such in Admin, so it needs no
+separate billing — it's already in the grid. A description shows under the name
+when the place has one.
+
+Images are requested through the same Cloudinary transform the strips use. The
+uploads are full-resolution (2560px wide and up) and the grid's cells top out
+around 400px, so serving them raw would cost megabytes a photograph to display a
+few hundred pixels.
+
+It carries the same numberless ruler as Home, top-centre, with the tick for this
+place lit — which is why the page fetches the whole ordered list of places rather
+than just this one: it needs to know how many there are and where this one sits
+among them.
 
 Getting back out works two ways: a **← Back** link in the top-left corner, in the
 spot the Home wordmark occupies, and a **sideways scroll** in either direction,
