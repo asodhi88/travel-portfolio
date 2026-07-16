@@ -484,6 +484,13 @@ body.public button:focus-visible {
     --gutter: 20px;
   }
 
+  /* The name is one line (white-space: nowrap), so a flat 72px runs off the
+     side of a narrow viewport. Scale it with the viewport here; above 768px it
+     stays the flat 72px the design calls for. */
+  .place-name {
+    font-size: clamp(40px, 7vw, 72px);
+  }
+
   .photo-hero {
     width: 90vw;
     max-height: 70vh;
