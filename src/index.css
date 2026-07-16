@@ -278,6 +278,31 @@ body.public button:focus-visible {
 }
 
 /* ---- Home ---- */
+
+/* The WebGL stage: one fixed, full-viewport canvas that paints every hero.
+   pointer-events is off so clicks fall through to the real <a> underneath each
+   plane — the canvas paints, the DOM handles interaction. */
+.webgl-stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* WebGL is painting the photographs, so the <img>s go invisible — but stay
+   laid out, measurable, clickable and readable. Never display:none. */
+.home.webgl-active .place-hero,
+.home.webgl-active .place-hero-link:hover .place-hero {
+  opacity: 0;
+}
+
+/* Text sits above the canvas. */
+.place-caption,
+.place-index {
+  z-index: 2;
+}
+
 .place-section {
   position: relative;
   height: 100vh;

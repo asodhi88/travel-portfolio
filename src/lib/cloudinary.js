@@ -5,6 +5,30 @@ const UPLOAD_PRESET = 'portfolio_uploads'
 const UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
 
 /**
+ * Insert a delivery transformation into a Cloudinary image URL.
+ *
+ * Both the DOM <img> and the WebGL texture request the exact same URL, so the
+ * photograph is downloaded and decoded once and served from cache the second
+ * time.
+ *
+ * Non-Cloudinary URLs are returned untouched.
+ *
+ * @param {string} url    a Cloudinary secure_url
+ * @param {number} width  target width in px
+ */
+export function cloudinaryImageUrl(url, width = 1600) {
+  if (!url) return url
+
+  const marker = '/image/upload/'
+  const at = url.indexOf(marker)
+  if (at === -1) return url
+
+  const head = url.slice(0, at + marker.length)
+  const tail = url.slice(at + marker.length)
+  return `${head}w_${width},q_auto,f_auto/${tail}`
+}
+
+/**
  * Upload a single file to Cloudinary, reporting progress.
  * @param {File} file
  * @param {(percent: number) => void} onProgress  called with 0-100

@@ -1,23 +1,43 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import WebGLStage from './WebGLStage.jsx'
+import { cloudinaryImageUrl } from '../lib/cloudinary.js'
+import { isWebGLAvailable } from '../lib/webgl.js'
 
 // Zero-pad to two digits for the index counter (01, 02, …).
 const pad = (n) => String(n).padStart(2, '0')
 
+// Matches TEXTURE_WIDTH in WebGLStage: one URL, one download, two consumers.
+const HERO_WIDTH = 1600
+
 /**
- * Full-viewport vertical sequence of places. Kept isolated so it can later be
- * swapped for a WebGL carousel without touching the Home page.
+ * Full-viewport vertical sequence of places.
  *
- * Each place is one exactly-100vh section. The figure shrink-wraps the hero
- * image so it can be centered on both axes, while the caption hangs off its
- * bottom-left edge without affecting that centering.
+ * The markup below is the whole layout: it sizes and centres every hero, and
+ * carries the links and the alt text. When WebGL is available the photographs
+ * are painted instead by <WebGLStage> onto a single fixed canvas, and these
+ * <img>s are dropped to opacity 0 — still laid out, still measurable, still
+ * clickable, still read by screen readers. Without WebGL they simply stay
+ * visible and the page is exactly what it was before.
  *
  * @param {{ places: Array<{ slug: string, name: string, country?: string, hero_image_url: string }> }} props
  */
 export default function Carousel({ places }) {
   const total = places.length
 
+  // Probed once, before first paint, so the class is right on the first frame
+  // and the images never flash.
+  const [webgl] = useState(isWebGLAvailable)
+
+  const imgRefs = useRef(new Map())
+
+  const setImgRef = (slug) => (el) => {
+    if (el) imgRefs.current.set(slug, el)
+    else imgRefs.current.delete(slug)
+  }
+
   return (
-    <div className="home">
+    <div className={webgl ? 'home webgl-active' : 'home'}>
       {places.map((place, i) => (
         <section className="place-section" key={place.slug}>
           <figure className="place-figure">
@@ -29,9 +49,12 @@ export default function Carousel({ places }) {
               {place.hero_image_url && (
                 <img
                   className="place-hero"
-                  src={place.hero_image_url}
+                  ref={setImgRef(place.slug)}
+                  src={cloudinaryImageUrl(place.hero_image_url, HERO_WIDTH)}
                   alt={place.name}
-                  loading="lazy"
+                  // Same URL and same CORS mode as the texture request, so the
+                  // two share one cache entry.
+                  crossOrigin="anonymous"
                 />
               )}
             </Link>
@@ -51,6 +74,8 @@ export default function Carousel({ places }) {
           </span>
         </section>
       ))}
+
+      {webgl && <WebGLStage places={places} imgRefs={imgRefs} />}
     </div>
   )
 }

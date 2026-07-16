@@ -20,7 +20,7 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 const ScrollContext = createContext(null)
 
-function useReducedMotion() {
+export function useReducedMotion() {
   const [reduced, setReduced] = useState(
     () => window.matchMedia(REDUCED_MOTION_QUERY).matches
   )
