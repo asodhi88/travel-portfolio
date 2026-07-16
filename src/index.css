@@ -351,9 +351,13 @@ body.public button:focus-visible {
   white-space: nowrap;
 }
 
+/* The name is kept to one line (see .place-caption), so its size has to track
+   the viewport or it runs off the side of a phone. Unscoped rather than
+   switched at a breakpoint, so it scales continuously with no jump: 40px until
+   ~571px wide, then 7vw, reaching its full 72px from ~1029px up. */
 .place-name {
   margin: 0;
-  font-size: 72px;
+  font-size: clamp(40px, 7vw, 72px);
   font-weight: 400;
   line-height: 1;
 }
@@ -482,13 +486,6 @@ body.public button:focus-visible {
 @media (max-width: 768px) {
   body.public {
     --gutter: 20px;
-  }
-
-  /* The name is one line (white-space: nowrap), so a flat 72px runs off the
-     side of a narrow viewport. Scale it with the viewport here; above 768px it
-     stays the flat 72px the design calls for. */
-  .place-name {
-    font-size: clamp(40px, 7vw, 72px);
   }
 
   .photo-hero {
