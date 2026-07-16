@@ -1,17 +1,31 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { useLayoutEffect } from 'react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import PhotoDetail from './pages/PhotoDetail.jsx'
 import PlaceGallery from './pages/PlaceGallery.jsx'
 import Admin from './pages/Admin.jsx'
 
 export default function App() {
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
+
+  // The public design uses its own dark token system, scoped to a body class
+  // so it never touches the Admin page's styling.
+  useLayoutEffect(() => {
+    document.body.classList.toggle('public', !isAdmin)
+  }, [isAdmin])
+
   return (
     <div className="app">
-      <header className="site-header">
-        <Link to="/" className="site-title">
-          Travel Portfolio
-        </Link>
-      </header>
+      {/* Header (and site title) only exist on Admin — the public pages are
+          intentionally chrome-free. */}
+      {isAdmin && (
+        <header className="site-header">
+          <Link to="/" className="site-title">
+            Travel Portfolio
+          </Link>
+        </header>
+      )}
 
       <main>
         <Routes>

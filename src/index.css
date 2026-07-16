@@ -33,7 +33,7 @@ a:hover {
   min-height: 100vh;
 }
 
-/* Header */
+/* Header (Admin only) */
 .site-header {
   display: flex;
   align-items: center;
@@ -63,101 +63,9 @@ a:hover {
   color: var(--muted);
 }
 
-.back-link {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--muted);
-}
-
-/* Home / Carousel */
-.carousel {
-  display: flex;
-  flex-direction: column;
-}
-
-.carousel-item {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 70vh;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
-}
-
-.carousel-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.carousel-item .label {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  padding: 1.25rem 1.5rem;
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 600;
-  width: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
-}
-
-/* PhotoDetail */
-.photo-detail .hero {
-  width: 100%;
-  max-height: 80vh;
-  object-fit: cover;
-  display: block;
-}
-
-.photo-detail .description {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  margin: 1.5rem 0;
-  color: var(--fg);
-}
-
-.explore-link {
-  display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.explore-link:hover {
-  background: var(--accent);
-  color: #fff;
-  text-decoration: none;
-}
-
-/* PlaceGallery grid */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0.75rem;
-}
-
-.gallery-grid figure {
-  margin: 0;
-}
-
-.gallery-grid img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  display: block;
-  border-radius: 4px;
-}
-
-.gallery-grid figcaption {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-top: 0.35rem;
-}
-
-/* Admin */
+/* ==========================================================================
+   Admin (light theme — do not restyle)
+   ========================================================================== */
 .admin {
   max-width: 800px;
 }
@@ -325,4 +233,236 @@ button:disabled {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   Public pages (Home, PhotoDetail, PlaceGallery)
+   Dark, photograph-forward. The only two colors are the background and text;
+   all color comes from the photographs themselves.
+   ========================================================================== */
+body.public {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #f5f5f3;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  --gutter: 48px;
+}
+
+/* Links never change color; hover is an opacity shift only (except where a
+   deliberate underline is specified). */
+body.public a {
+  color: #f5f5f3;
+  text-decoration: none;
+}
+
+body.public a:hover {
+  text-decoration: none;
+}
+
+/* Loading / empty / error states, readable on the dark background. */
+body.public .muted {
+  color: rgba(245, 245, 243, 0.4);
+}
+
+body.public .error {
+  color: #f5f5f3;
+}
+
+/* Keyboard focus stays visible. */
+body.public a:focus-visible,
+body.public button:focus-visible {
+  outline: 1px solid #f5f5f3;
+  outline-offset: 4px;
+}
+
+/* ---- Home ---- */
+.place-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.place-hero-link {
+  display: block;
+  width: 70vw;
+  line-height: 0;
+}
+
+.place-hero {
+  width: 100%;
+  height: 75vh;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.place-hero-link:hover .place-hero {
+  opacity: 0.85;
+}
+
+.place-caption {
+  width: 70vw;
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.place-name {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.place-name a {
+  transition: opacity 0.3s ease;
+}
+
+.place-name a:hover {
+  opacity: 0.7;
+}
+
+.place-country {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+}
+
+.place-index {
+  position: absolute;
+  left: var(--gutter);
+  bottom: var(--gutter);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+}
+
+/* ---- PhotoDetail ---- */
+.photo-detail {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  padding: 96px var(--gutter);
+}
+
+.photo-hero {
+  width: min(80vw, 1100px);
+  max-height: 82vh;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-body {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.photo-description {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+
+.explore-link {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.explore-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- PlaceGallery ---- */
+.place-gallery {
+  min-height: 100vh;
+  padding: var(--gutter);
+}
+
+.gallery-back {
+  display: inline-block;
+  margin-bottom: 48px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-back:hover {
+  opacity: 0.7;
+}
+
+.gallery-title {
+  margin: 0 0 48px;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 400;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 48px;
+}
+
+.gallery-grid figure {
+  margin: 0;
+}
+
+.gallery-grid img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gallery-grid figcaption {
+  margin-top: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  body.public {
+    --gutter: 20px;
+  }
+
+  .place-hero-link,
+  .place-caption {
+    width: 86vw;
+  }
+
+  .place-hero {
+    height: 60vh;
+  }
+
+  .photo-hero {
+    width: 90vw;
+    max-height: 70vh;
+  }
+
+  .photo-detail {
+    padding: 64px var(--gutter);
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+  }
 }

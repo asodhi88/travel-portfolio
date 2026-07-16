@@ -41,18 +41,14 @@ export default function PhotoDetail() {
   return (
     <article className="photo-detail">
       {place.hero_image_url && (
-        <img className="hero" src={place.hero_image_url} alt={place.name} />
+        <img className="photo-hero" src={place.hero_image_url} alt={place.name} />
       )}
-      <div className="container">
-        <Link to="/" className="back-link">
-          ← Back
-        </Link>
-        <h1>{place.name}</h1>
+      <div className="photo-body">
         {place.description && (
-          <p className="description">{place.description}</p>
+          <p className="photo-description">{place.description}</p>
         )}
         <Link to={`/place/${place.slug}`} className="explore-link">
-          Explore →
+          Explore
         </Link>
       </div>
     </article>

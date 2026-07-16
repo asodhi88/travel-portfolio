@@ -11,9 +11,11 @@ export default function Home() {
     let active = true
 
     async function load() {
+      // select('*') so an optional `country` column is picked up if present,
+      // without breaking when it isn't.
       const { data, error } = await supabase
         .from('places')
-        .select('slug, name, hero_image_url, sort_order')
+        .select('*')
         .order('sort_order', { ascending: true })
 
       if (!active) return

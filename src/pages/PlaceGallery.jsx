@@ -54,11 +54,11 @@ export default function PlaceGallery() {
   if (!place) return <div className="container muted">Not found.</div>
 
   return (
-    <div className="container">
-      <Link to={`/photo/${place.slug}`} className="back-link">
-        ← Back to {place.name}
+    <div className="place-gallery">
+      <Link to={`/photo/${place.slug}`} className="gallery-back">
+        ← Back
       </Link>
-      <h1>{place.name}</h1>
+      <h1 className="gallery-title">{place.name}</h1>
 
       {images.length === 0 ? (
         <p className="muted">No images yet.</p>
