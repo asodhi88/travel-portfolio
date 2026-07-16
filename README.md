@@ -17,7 +17,7 @@ Cloudinary (image hosting).
 | Path            | Page          | Purpose                                            |
 | --------------- | ------------- | -------------------------------------------------- |
 | `/`             | Home          | Horizontal row of place strips (`Carousel`)        |
-| `/photo/:slug`  | PhotoDetail   | Hero image, description, link to the gallery       |
+| `/photo/:slug`  | PhotoDetail   | Hero image, description, ruler, link to the gallery |
 | `/place/:slug`  | PlaceGallery  | Place name + responsive grid of all images         |
 | `/admin`        | Admin         | Login, create/delete places, upload/manage images  |
 
@@ -31,8 +31,9 @@ per place, centred vertically in the viewport. The strips are **unlabelled** —
 no names, no captions, no index counter anywhere on the page. Each place's name
 reaches screen readers through its link's `aria-label` and nothing else.
 
-Strips sit at 40% brightness at rest and come up to full on hover (or keyboard
-focus). Clicking one routes to `/photo/:slug`.
+Strips sit in greyscale at rest and turn to their real colour on hover (or
+keyboard focus). Clicking one opens `/photo/:slug` — plainly, with no transition
+animation.
 
 ### Scrolling
 
@@ -74,12 +75,30 @@ click lands on the real `<a>` underneath.
 ### Fallbacks
 
 - **No WebGL** — the `<img>`s simply stay visible and the page still works. The
-  rest-and-hover dimming is an equivalent CSS `brightness()` filter, which is
-  why the shader dims *after* its sRGB conversion: so both paths agree.
+  rest-and-hover treatment is an equivalent CSS `grayscale()` filter, which is
+  why the shader desaturates *after* its sRGB conversion, using the same
+  weights that filter uses: so both paths agree rather than merely resemble
+  each other.
 - **Narrow screens** (≤768px) — a plain vertical stack.
 - **`prefers-reduced-motion`** — also the vertical stack. It turns Lenis off,
   and without Lenis mapping the wheel across, a horizontal row would be
   unreachable by an ordinary scroll gesture.
+
+## PhotoDetail
+
+The opened photograph, with a description and a link through to the place's full
+gallery. It carries the same numberless ruler as Home, top-centre, with the tick
+for this photo lit — which is why the page fetches the whole ordered list of
+places rather than just this one: it needs to know how many there are and where
+this one sits among them.
+
+Getting back out works two ways: a **← Back** link in the top-left corner, in the
+spot the Home wordmark occupies, and a **sideways scroll** in either direction,
+mirroring the gesture that moved the row sideways on the way in. Lenis only ever
+consumes the vertical axis, which leaves the horizontal one free for this. The
+gesture has to clear a threshold, and only counts when it's more sideways than
+vertical, so the drift that rides along with an ordinary vertical scroll can't
+trip it.
 
 ## Setup
 

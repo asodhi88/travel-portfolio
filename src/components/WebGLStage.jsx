@@ -37,12 +37,13 @@ const SEGMENTS_Y = 24
 
 const TEXTURE_WIDTH = 1600
 
-// Brightness the strips sit at when nothing is pointing at them.
-const REST_BRIGHTNESS = 0.4
+// How grey the strips sit when nothing is pointing at them: 1 is fully
+// desaturated, 0 is the photograph's own colour.
+const REST_GREY = 1
 
-// How fast a plane's brightness chases hover on/off, per frame. Tuned to land
-// near the 0.3s the CSS fallback uses.
-const BRIGHTNESS_LERP = 0.12
+// How fast a plane's colour chases hover on/off, per frame. Tuned to land near
+// the 0.3s the CSS fallback uses.
+const GREY_LERP = 0.12
 
 const vertexShader = /* glsl */ `
   uniform float uVelocity;
@@ -87,7 +88,7 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uPlaneSize;
   uniform vec2 uImageSize;
   uniform float uAlpha;
-  uniform float uBrightness;
+  uniform float uGrey;
 
   varying vec2 vUv;
 
@@ -112,10 +113,15 @@ const fragmentShader = /* glsl */ `
     // render visibly dark.
     #include <colorspace_fragment>
 
-    // Dim after the sRGB conversion, not before: a CSS brightness() filter
-    // scales sRGB values, and the no-WebGL fallback is exactly that filter. Do
-    // it in linear space instead and the two paths visibly disagree.
-    gl_FragColor.rgb *= uBrightness;
+    // Desaturate after the sRGB conversion, not before: a CSS grayscale()
+    // filter works on sRGB values, and the no-WebGL fallback is exactly that
+    // filter. Do it in linear space instead and the two paths visibly disagree.
+    //
+    // These are the weights grayscale() itself uses — the saturate(0) matrix
+    // from the Filter Effects spec — so the grey matches it rather than merely
+    // resembling it.
+    vec3 luma = vec3(dot(gl_FragColor.rgb, vec3(0.213, 0.715, 0.072)));
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, luma, uGrey);
 
     gl_FragColor.a *= uAlpha;
   }
@@ -194,7 +200,7 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
             uPlaneSize: { value: new THREE.Vector2(1, 1) },
             uImageSize: { value: new THREE.Vector2(1, 1) },
             uAlpha: { value: 0 },
-            uBrightness: { value: REST_BRIGHTNESS },
+            uGrey: { value: REST_GREY },
             uVelocity: { value: 0 },
             uLead: { value: BEND_LEAD },
             uDepth: { value: BEND_DEPTH },
@@ -218,7 +224,7 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
           // axis, viewport-space across it (where the two are the same thing,
           // because that axis never moves).
           rect: { top: 0, left: 0, width: 0, height: 0 },
-          brightness: REST_BRIGHTNESS,
+          grey: REST_GREY,
         }
       })
 
@@ -322,9 +328,10 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
         mesh.position.x = rect.left - scrollX + rect.width / 2 - halfW
         mesh.position.y = halfH - (rect.top - scrollY + rect.height / 2)
 
-        const targetBrightness = hovered === item.slug ? 1 : REST_BRIGHTNESS
-        item.brightness += (targetBrightness - item.brightness) * BRIGHTNESS_LERP
-        material.uniforms.uBrightness.value = item.brightness
+        // Full colour under the pointer, grey everywhere else.
+        const targetGrey = hovered === item.slug ? 0 : REST_GREY
+        item.grey += (targetGrey - item.grey) * GREY_LERP
+        material.uniforms.uGrey.value = item.grey
 
         material.uniforms.uVelocity.value = smoothedVelocity
         material.uniforms.uAlpha.value = Math.min(

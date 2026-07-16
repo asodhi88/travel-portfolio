@@ -335,29 +335,32 @@ body.public button:focus-visible {
   overflow: hidden;
 }
 
-/* At rest the row reads as a dim contact sheet; the strip under the pointer is
-   the only one at full strength. When WebGL is active this filter is invisible
-   (the <img> is transparent) and uBrightness does the same job on the plane —
-   the two are deliberately kept in step. */
+/* At rest the row reads as a black-and-white contact sheet; the strip under the
+   pointer is the only one in colour. When WebGL is active this filter is
+   invisible (the <img> is transparent) and uGrey does the same job on the
+   plane — the two are deliberately kept in step. */
 .strip-image {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.4);
+  filter: grayscale(1);
   transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
 .strip:hover .strip-image,
 .strip:focus-visible .strip-image {
-  filter: brightness(1);
+  filter: grayscale(0);
 }
 
-/* ---- Home chrome ---- */
+/* ---- Chrome (Home + PhotoDetail) ---- */
 
-/* Fixed, so both of these stay put while the row travels underneath. Above the
-   canvas, which sits at z-index 1. */
-.wordmark {
+/* Fixed, so these stay put while the page travels underneath, and above the
+   canvas, which sits at z-index 1. The Home wordmark and the PhotoDetail back
+   link occupy the same corner on their respective pages and read the same way,
+   so they're one rule. */
+.wordmark,
+.photo-back {
   position: fixed;
   top: var(--gutter);
   left: var(--gutter);
@@ -368,13 +371,13 @@ body.public button:focus-visible {
   transition: opacity 0.3s ease;
 }
 
-.wordmark:hover {
+.wordmark:hover,
+.photo-back:hover {
   opacity: 0.6;
 }
 
-/* One hairline per place. It stands in for the old index counter: position in
-   the sequence, read at a glance, without a number or a caption anywhere on
-   the page. */
+/* One hairline per place. It stands in for an index counter: position in the
+   sequence, read at a glance, without a number anywhere on the page. */
 .ruler {
   position: fixed;
   top: var(--gutter);

@@ -3,19 +3,40 @@ import { useScroll } from '../lib/scroll.jsx'
 
 /**
  * One hairline per place, centred at the top of the viewport, with the tick for
- * the currently-centred strip lit.
+ * the current place lit.
  *
- * It reads the strips' real boxes rather than recomputing them from the layout
- * constants, so it stays honest through any amount of CSS centring, padding and
- * wrapping. Measurement happens on layout changes only; each frame is then a
- * scan over a handful of numbers.
+ * Deliberately numberless: position in the sequence is the whole message, read
+ * at a glance. It's decorative — the real navigation is the links underneath —
+ * so it stays out of the accessibility tree.
+ *
+ * @param {{ count: number, active: number }} props
+ */
+export default function Ruler({ count, active }) {
+  return (
+    <div className="ruler" aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className={i === active ? 'ruler-tick is-active' : 'ruler-tick'}
+        />
+      ))}
+    </div>
+  )
+}
+
+/**
+ * The Home page's ruler, which lights whichever strip is nearest the centre of
+ * the viewport as the row scrolls past.
+ *
+ * It owns the tracking state so that Home's carousel never re-renders on scroll
+ * — only this subtree does, and only when the lit tick actually moves.
  *
  * @param {{
  *   places: Array<{ slug: string }>,
  *   stripRefs: React.MutableRefObject<Map<string, HTMLElement>>
  * }} props
  */
-export default function Ruler({ places, stripRefs }) {
+export function ScrollRuler({ places, stripRefs }) {
   const { subscribe, getScroll, horizontal } = useScroll()
   const [active, setActive] = useState(0)
 
@@ -24,6 +45,10 @@ export default function Ruler({ places, stripRefs }) {
   const centresRef = useRef([])
 
   useEffect(() => {
+    // Read the strips' real boxes rather than recomputing them from the layout
+    // constants, so this stays honest through any amount of CSS centring and
+    // padding. Measured on layout changes only; each frame is then a scan over
+    // a handful of numbers.
     const measure = () => {
       const scroll = getScroll()
 
@@ -43,8 +68,7 @@ export default function Ruler({ places, stripRefs }) {
       if (centres.length === 0) return
 
       const viewportCentre =
-        getScroll() +
-        (horizontal ? window.innerWidth : window.innerHeight) / 2
+        getScroll() + (horizontal ? window.innerWidth : window.innerHeight) / 2
 
       let nearest = 0
       let best = Infinity
@@ -78,14 +102,5 @@ export default function Ruler({ places, stripRefs }) {
     }
   }, [places, stripRefs, subscribe, getScroll, horizontal])
 
-  return (
-    <div className="ruler" aria-hidden="true">
-      {places.map((place, i) => (
-        <span
-          key={place.slug}
-          className={i === active ? 'ruler-tick is-active' : 'ruler-tick'}
-        />
-      ))}
-    </div>
-  )
+  return <Ruler count={places.length} active={active} />
 }
