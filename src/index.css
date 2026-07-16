@@ -246,6 +246,8 @@ body.public {
   color: #f5f5f3;
   font-family: 'Inter Tight', system-ui, sans-serif;
   --gutter: 48px;
+  /* Vertical room the Home caption (name + country) needs below the hero. */
+  --caption-reserve: 124px;
 }
 
 /* Links never change color; hover is an opacity shift only (except where a
@@ -278,25 +280,36 @@ body.public button:focus-visible {
 /* ---- Home ---- */
 .place-section {
   position: relative;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0;
+}
+
+/* Shrink-wraps the hero so the image itself is what gets centered on both
+   axes, and so the caption can anchor to the image's real bottom-left edge
+   whatever the photo's aspect ratio. */
+.place-figure {
+  position: relative;
+  margin: 0;
 }
 
 .place-hero-link {
   display: block;
-  width: 70vw;
   line-height: 0;
 }
 
 .place-hero {
-  width: 100%;
-  height: 75vh;
-  object-fit: cover;
   display: block;
+  max-width: 70vw;
+  /* 75vh is the cap. A 75vh image centred in 100vh leaves only a 12.5vh band
+     below it, which is less than the caption needs on short viewports — so
+     shrink further there to keep the name and country off the viewport edge.
+     Above ~1000px tall this resolves to the full 75vh. */
+  max-height: min(75vh, calc(100vh - var(--caption-reserve) * 2));
+  width: auto;
+  height: auto;
+  object-fit: cover;
   transition: opacity 0.3s ease;
 }
 
@@ -304,12 +317,16 @@ body.public button:focus-visible {
   opacity: 0.85;
 }
 
+/* Absolute, so it hangs below-left of the image without pulling the image
+   off-center. */
 .place-caption {
-  width: 70vw;
-  margin-top: 32px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .place-name {
@@ -334,10 +351,12 @@ body.public button:focus-visible {
   opacity: 0.4;
 }
 
+/* Absolute within the exactly-100vh section, so it sits at the viewport's
+   bottom-left while that section is in view — and still reads the right index. */
 .place-index {
   position: absolute;
-  left: var(--gutter);
-  bottom: var(--gutter);
+  left: 40px;
+  bottom: 40px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -443,13 +462,9 @@ body.public button:focus-visible {
     --gutter: 20px;
   }
 
-  .place-hero-link,
-  .place-caption {
-    width: 86vw;
-  }
-
   .place-hero {
-    height: 60vh;
+    max-width: 86vw;
+    max-height: 60vh;
   }
 
   .photo-hero {

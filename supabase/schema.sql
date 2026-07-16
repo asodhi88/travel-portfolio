@@ -5,11 +5,15 @@ create table if not exists places (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
+  country text,
   description text,
   hero_image_url text,
   sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- If the places table already exists from an earlier version, add the column:
+--   alter table places add column if not exists country text;
 
 create table if not exists images (
   id uuid primary key default gen_random_uuid(),
