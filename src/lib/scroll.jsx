@@ -5,10 +5,10 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
+import { useMediaQuery } from './media.js'
 
 /**
  * easeOutExpo — near-instant response, long weighted tail. This is the curve
@@ -21,18 +21,7 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 const ScrollContext = createContext(null)
 
 export function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => window.matchMedia(REDUCED_MOTION_QUERY).matches
-  )
-
-  useEffect(() => {
-    const mq = window.matchMedia(REDUCED_MOTION_QUERY)
-    const onChange = (e) => setReduced(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-
-  return reduced
+  return useMediaQuery(REDUCED_MOTION_QUERY)
 }
 
 /**
@@ -44,10 +33,12 @@ export function useReducedMotion() {
  *   - `useScrollVelocityRef()` — a ref to read inside your own rAF loop
  *   - `useScrollVelocity(cb)`  — a per-frame callback
  *
- * @param {{ enabled?: boolean, children: React.ReactNode }} props
+ * @param {{ enabled?: boolean, horizontal?: boolean, children: React.ReactNode }} props
  *   `enabled` false (e.g. on Admin) leaves scrolling completely untouched.
+ *   `horizontal` true scrolls the document along X instead of Y, while still
+ *   reading the ordinary vertical wheel/trackpad gesture.
  */
-export function ScrollProvider({ children, enabled = true }) {
+export function ScrollProvider({ children, enabled = true, horizontal = false }) {
   const reducedMotion = useReducedMotion()
   const smooth = enabled && !reducedMotion
 
@@ -83,6 +74,11 @@ export function ScrollProvider({ children, enabled = true }) {
         easing: easeOutExpo,
         smoothWheel: true,
         syncTouch: true,
+        orientation: horizontal ? 'horizontal' : 'vertical',
+        // Keep listening to the vertical gesture either way: on the horizontal
+        // home page a plain downward wheel/trackpad swipe drives the row
+        // sideways, which is the whole trick.
+        gestureOrientation: 'vertical',
       })
       lenisRef.current = lenis
 
@@ -102,16 +98,19 @@ export function ScrollProvider({ children, enabled = true }) {
     }
 
     // prefers-reduced-motion: native scroll. Velocity is still published, in
-    // the same px-per-frame units Lenis uses, so subscribers behave the same.
-    let lastY = window.scrollY
+    // the same px-per-frame units Lenis uses and off the same axis, so
+    // subscribers behave the same.
+    const readAxis = () => (horizontal ? window.scrollX : window.scrollY)
+
+    let last = readAxis()
     let lastTime = performance.now()
 
     const raf = (time) => {
       const dt = time - lastTime
       if (dt > 0) {
-        const y = window.scrollY
-        publish(((y - lastY) / dt) * (1000 / 60))
-        lastY = y
+        const next = readAxis()
+        publish(((next - last) / dt) * (1000 / 60))
+        last = next
         lastTime = time
       }
       rafId = requestAnimationFrame(raf)
@@ -122,7 +121,7 @@ export function ScrollProvider({ children, enabled = true }) {
       cancelAnimationFrame(rafId)
       publish(0)
     }
-  }, [enabled, smooth])
+  }, [enabled, smooth, horizontal])
 
   // A new route must never inherit the previous page's scroll offset.
   useEffect(() => {
@@ -141,9 +140,16 @@ export function ScrollProvider({ children, enabled = true }) {
       velocityRef,
       subscribe,
       getLenis: () => lenisRef.current,
+      /** Current scroll offset along whichever axis is live, in CSS px. Ask
+          Lenis first, so we read the value it is animating towards this frame
+          rather than the one the browser has committed. */
+      getScroll: () =>
+        lenisRef.current?.scroll ??
+        (horizontal ? window.scrollX : window.scrollY),
       smooth,
+      horizontal,
     }),
-    [subscribe, smooth]
+    [subscribe, smooth, horizontal]
   )
 
   return <ScrollContext.Provider value={value}>{children}</ScrollContext.Provider>

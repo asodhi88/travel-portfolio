@@ -248,6 +248,15 @@ body.public {
   --gutter: 48px;
 }
 
+/* The home row scrolls sideways, and its horizontal scrollbar eats ~15px off
+   the bottom of the viewport — which 100vh knows nothing about, so the page
+   would grow a second, vertical scrollbar with exactly 15px of travel in it.
+   Clipping Y kills that; the browser still gives X a scrollbar, because an
+   overflow of hidden on one axis computes the other to auto. */
+body.scroll-x {
+  overflow-y: hidden;
+}
+
 /* Links never change color; hover is an opacity shift only (except where a
    deliberate underline is specified). */
 body.public a {
@@ -290,103 +299,125 @@ body.public button:focus-visible {
 
 /* WebGL is painting the photographs, so the <img>s go invisible — but stay
    laid out, measurable, clickable and readable. Never display:none. */
-.home.webgl-active .place-hero,
-.home.webgl-active .place-hero-link:hover .place-hero {
+.home.webgl-active .strip-image {
   opacity: 0;
 }
 
-/* Text sits above the canvas. */
-.place-caption,
-.place-index {
-  z-index: 2;
-}
-
-.place-section {
-  position: relative;
-  height: 100vh;
+/* A dense row of narrow portrait strips, centred in the viewport and running
+   off the right edge. The document itself is what overflows, which is what
+   Lenis scrolls — sideways here, driven by an ordinary vertical wheel gesture
+   (see ScrollProvider). Strip geometry arrives as custom properties from
+   <Carousel>, which is the one place it's defined. */
+.home {
   display: flex;
   align-items: center;
-  justify-content: center;
+  min-height: 100vh;
 }
 
-/* Shrink-wraps the hero so the image itself is what gets centered on both
-   axes, and so the caption can anchor to the image's real bottom-left edge
-   whatever the photo's aspect ratio. */
-.place-figure {
-  position: relative;
-  margin: 0;
-}
-
-.place-hero-link {
-  display: block;
-  line-height: 0;
-}
-
-.place-hero {
-  display: block;
-  max-width: 70vw;
-  max-height: 75vh;
-  width: auto;
-  height: auto;
-  object-fit: cover;
-  transition: opacity 0.3s ease;
-}
-
-.place-hero-link:hover .place-hero {
-  opacity: 0.85;
-}
-
-/* Absolute, so it hangs below-left of the image without pulling the image
-   off-center. Being absolute it also shrink-to-fits, which would otherwise cap
-   it at the image's width and wrap any two-word name onto a second line — so
-   the name is kept on one line and allowed to run past the image's right edge. */
-.place-caption {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 24px;
+.strip-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  white-space: nowrap;
+  gap: var(--strip-gap);
+  padding-inline: var(--gutter);
+  /* Centres the row while it's still narrower than the viewport; collapses to
+     nothing — leaving the overflow on the right, where it can be scrolled to —
+     once it isn't. */
+  margin-inline: auto;
 }
 
-/* The name is kept to one line (see .place-caption), so its size has to track
-   the viewport or it runs off the side of a phone. Unscoped rather than
-   switched at a breakpoint, so it scales continuously with no jump: 40px until
-   ~571px wide, then 7vw, reaching its full 72px from ~1029px up. */
-.place-name {
-  margin: 0;
-  font-size: clamp(40px, 7vw, 72px);
-  font-weight: 400;
-  line-height: 1;
+.strip {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: var(--strip-w);
+  /* Capped against the viewport, so a short window crops the strips rather
+     than handing the page a second, vertical scrollbar to fight the first. */
+  height: min(var(--strip-h), calc(100vh - var(--gutter) * 2));
+  overflow: hidden;
 }
 
-.place-name a {
+/* At rest the row reads as a dim contact sheet; the strip under the pointer is
+   the only one at full strength. When WebGL is active this filter is invisible
+   (the <img> is transparent) and uBrightness does the same job on the plane —
+   the two are deliberately kept in step. */
+.strip-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.4);
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.strip:hover .strip-image,
+.strip:focus-visible .strip-image {
+  filter: brightness(1);
+}
+
+/* ---- Home chrome ---- */
+
+/* Fixed, so both of these stay put while the row travels underneath. Above the
+   canvas, which sits at z-index 1. */
+.wordmark {
+  position: fixed;
+  top: var(--gutter);
+  left: var(--gutter);
+  z-index: 3;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   transition: opacity 0.3s ease;
 }
 
-.place-name a:hover {
-  opacity: 0.7;
+.wordmark:hover {
+  opacity: 0.6;
 }
 
-.place-country {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.4;
+/* One hairline per place. It stands in for the old index counter: position in
+   the sequence, read at a glance, without a number or a caption anywhere on
+   the page. */
+.ruler {
+  position: fixed;
+  top: var(--gutter);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
 }
 
-/* Absolute within the exactly-100vh section, so it sits at the viewport's
-   bottom-left while that section is in view — and still reads the right index. */
-.place-index {
-  position: absolute;
-  left: 40px;
-  bottom: 40px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.4;
+.ruler-tick {
+  width: 1px;
+  height: 8px;
+  background: #f5f5f3;
+  opacity: 0.2;
+  transition: opacity 0.3s ease, height 0.3s ease;
+}
+
+.ruler-tick.is-active {
+  height: 14px;
+  opacity: 1;
+}
+
+/* ---- Home, stacked ----
+   Narrow screens (and prefers-reduced-motion, which turns Lenis off) get the
+   plain vertical stack instead. Same strips, same dimming, ordinary downward
+   scroll. */
+.home.is-stacked {
+  display: block;
+}
+
+.home.is-stacked .strip-row {
+  flex-direction: column;
+  align-items: center;
+  /* Clears the fixed wordmark and ruler at the top. */
+  padding-block: calc(var(--gutter) * 2.5) var(--gutter);
+}
+
+.home.is-stacked .strip {
+  width: min(72vw, 300px);
+  height: min(calc(var(--strip-h) * 1.4), 70vh);
 }
 
 /* ---- PhotoDetail ---- */

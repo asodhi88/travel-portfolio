@@ -19,7 +19,7 @@ const VELOCITY_LERP = 0.075
 // Below this the plane is treated as flat, so it settles instead of creeping.
 const VELOCITY_EPSILON = 0.0015
 
-// Px the plane's horizontal centre leads its edges along the scroll axis.
+// Px the plane's centre line leads its edges along the scroll axis.
 const BEND_LEAD = 26
 
 // Px the centre is pushed away from the camera. Reads as a shallow curve.
@@ -37,11 +37,19 @@ const SEGMENTS_Y = 24
 
 const TEXTURE_WIDTH = 1600
 
+// Brightness the strips sit at when nothing is pointing at them.
+const REST_BRIGHTNESS = 0.4
+
+// How fast a plane's brightness chases hover on/off, per frame. Tuned to land
+// near the 0.3s the CSS fallback uses.
+const BRIGHTNESS_LERP = 0.12
+
 const vertexShader = /* glsl */ `
   uniform float uVelocity;
   uniform float uLead;
   uniform float uDepth;
   uniform float uStretch;
+  uniform float uHorizontal;
 
   varying vec2 vUv;
 
@@ -52,14 +60,22 @@ const vertexShader = /* glsl */ `
 
     vec3 pos = position;
 
-    // 0 at the plane's left and right edges, 1 at its horizontal centre.
-    float arc = sin(uv.x * PI);
+    // 0 at the plane's two edges across the scroll axis, 1 along its centre
+    // line: the width for a vertical scroll, the height for a horizontal one.
+    float arc = sin(mix(uv.x, uv.y, uHorizontal) * PI);
 
-    // Elongate along the scroll axis, then let the centre lead the edges and
-    // fall away from the camera. Together they read as a sheet of paper being
-    // dragged through the viewport.
-    pos.y *= 1.0 + abs(uVelocity) * uStretch;
-    pos.y += arc * uVelocity * uLead;
+    float stretch = 1.0 + abs(uVelocity) * uStretch;
+    float lead = arc * uVelocity * uLead;
+
+    // Elongate along the scroll axis, then let the centre line lead the edges
+    // and fall away from the camera. Together they read as a sheet of paper
+    // being dragged through the viewport.
+    //
+    // A positive velocity drives the plane up the screen when scrolling
+    // vertically but leftwards when scrolling horizontally, hence the flipped
+    // sign — either way the centre runs ahead and the edges trail.
+    pos.x = mix(pos.x, pos.x * stretch - lead, uHorizontal);
+    pos.y = mix(pos.y * stretch + lead, pos.y, uHorizontal);
     pos.z -= arc * abs(uVelocity) * uDepth;
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
@@ -71,6 +87,7 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uPlaneSize;
   uniform vec2 uImageSize;
   uniform float uAlpha;
+  uniform float uBrightness;
 
   varying vec2 vUv;
 
@@ -95,6 +112,11 @@ const fragmentShader = /* glsl */ `
     // render visibly dark.
     #include <colorspace_fragment>
 
+    // Dim after the sRGB conversion, not before: a CSS brightness() filter
+    // scales sRGB values, and the no-WebGL fallback is exactly that filter. Do
+    // it in linear space instead and the two paths visibly disagree.
+    gl_FragColor.rgb *= uBrightness;
+
     gl_FragColor.a *= uAlpha;
   }
 `
@@ -103,22 +125,23 @@ const clamp = (v, min, max) => Math.min(Math.max(v, min), max)
 
 /**
  * Renders each hero photograph as a textured plane on one full-viewport fixed
- * canvas, positioned to sit exactly where its (visually hidden) DOM <img>
- * sits.
+ * canvas, positioned to sit exactly where its (visually hidden) DOM strip sits.
  *
  * The DOM stays the source of truth: it does the layout, the measurement, the
  * links and the accessible names. This only paints. The canvas is
  * `pointer-events: none`, so a click on a plane lands on the real <a>
- * underneath it and routes to /photo/:slug the ordinary way.
+ * underneath it and routes to /photo/:slug the ordinary way — which is also why
+ * hover can be read straight off the DOM.
  *
  * @param {{
  *   places: Array<{ slug: string, hero_image_url: string }>,
- *   imgRefs: React.MutableRefObject<Map<string, HTMLImageElement>>
+ *   stripRefs: React.MutableRefObject<Map<string, HTMLElement>>,
+ *   hoveredRef: React.MutableRefObject<string | null>
  * }} props
  */
-export default function WebGLStage({ places, imgRefs }) {
+export default function WebGLStage({ places, stripRefs, hoveredRef }) {
   const containerRef = useRef(null)
-  const { subscribe, getLenis } = useScroll()
+  const { subscribe, getScroll, horizontal } = useScroll()
   const reducedMotion = useReducedMotion()
 
   // Read inside the frame loop, so toggling the OS setting doesn't rebuild the
@@ -158,10 +181,6 @@ export default function WebGLStage({ places, imgRefs }) {
       camera.updateProjectionMatrix()
     }
 
-    /** Lenis and the native fallback both scroll the window; ask Lenis first
-        so we read the same value it is animating towards this frame. */
-    const getScroll = () => getLenis()?.scroll ?? window.scrollY
-
     // One entry per place, in `places` order.
     const items = places
       .filter((place) => place.hero_image_url)
@@ -175,10 +194,12 @@ export default function WebGLStage({ places, imgRefs }) {
             uPlaneSize: { value: new THREE.Vector2(1, 1) },
             uImageSize: { value: new THREE.Vector2(1, 1) },
             uAlpha: { value: 0 },
+            uBrightness: { value: REST_BRIGHTNESS },
             uVelocity: { value: 0 },
             uLead: { value: BEND_LEAD },
             uDepth: { value: BEND_DEPTH },
             uStretch: { value: BEND_STRETCH },
+            uHorizontal: { value: horizontal ? 1 : 0 },
           },
         })
 
@@ -193,27 +214,30 @@ export default function WebGLStage({ places, imgRefs }) {
           mesh,
           material,
           texture: null,
-          // Document-space box of the DOM <img>, in CSS px.
+          // Box of the DOM strip in CSS px: document-space along the scroll
+          // axis, viewport-space across it (where the two are the same thing,
+          // because that axis never moves).
           rect: { top: 0, left: 0, width: 0, height: 0 },
+          brightness: REST_BRIGHTNESS,
         }
       })
 
     /* ---- measurement ------------------------------------------------------
-       The DOM decides where every photograph goes; we just copy it. Measure in
-       document space once per layout change, then each frame it's a single
-       subtraction against the scroll offset — no per-frame getBoundingClientRect. */
+       The DOM decides where every photograph goes; we just copy it. Measure
+       once per layout change, then each frame it's a single subtraction against
+       the scroll offset — no per-frame getBoundingClientRect. */
 
     const measure = () => {
       const scroll = getScroll()
 
       for (const item of items) {
-        const el = imgRefs.current.get(item.slug)
+        const el = stripRefs.current.get(item.slug)
         if (!el) continue
 
         const box = el.getBoundingClientRect()
         const next = {
-          top: box.top + scroll,
-          left: box.left,
+          top: box.top + (horizontal ? 0 : scroll),
+          left: box.left + (horizontal ? scroll : 0),
           width: box.width,
           height: box.height,
         }
@@ -282,8 +306,11 @@ export default function WebGLStage({ places, imgRefs }) {
       if (Math.abs(smoothedVelocity) < VELOCITY_EPSILON) smoothedVelocity = 0
 
       const scroll = getScroll()
+      const scrollX = horizontal ? scroll : 0
+      const scrollY = horizontal ? 0 : scroll
       const halfW = window.innerWidth / 2
       const halfH = window.innerHeight / 2
+      const hovered = hoveredRef.current
 
       for (const item of items) {
         const { rect, mesh, material } = item
@@ -292,8 +319,12 @@ export default function WebGLStage({ places, imgRefs }) {
         mesh.visible = ready
         if (!ready) continue
 
-        mesh.position.x = rect.left + rect.width / 2 - halfW
-        mesh.position.y = halfH - (rect.top - scroll + rect.height / 2)
+        mesh.position.x = rect.left - scrollX + rect.width / 2 - halfW
+        mesh.position.y = halfH - (rect.top - scrollY + rect.height / 2)
+
+        const targetBrightness = hovered === item.slug ? 1 : REST_BRIGHTNESS
+        item.brightness += (targetBrightness - item.brightness) * BRIGHTNESS_LERP
+        material.uniforms.uBrightness.value = item.brightness
 
         material.uniforms.uVelocity.value = smoothedVelocity
         material.uniforms.uAlpha.value = Math.min(
@@ -316,11 +347,12 @@ export default function WebGLStage({ places, imgRefs }) {
     }
     window.addEventListener('resize', onResize)
 
-    // Catches the photographs finishing their decode (and any reflow they
-    // cause), which is what actually gives each <img> its box.
+    // The strips are sized by CSS rather than by their contents, so this is
+    // really just a second line of defence behind the resize listener — it
+    // catches any relayout the window never hears about.
     const observer = new ResizeObserver(measure)
     for (const item of items) {
-      const el = imgRefs.current.get(item.slug)
+      const el = stripRefs.current.get(item.slug)
       if (el) observer.observe(el)
     }
 
@@ -345,7 +377,7 @@ export default function WebGLStage({ places, imgRefs }) {
       renderer.dispose()
       renderer.domElement.remove()
     }
-  }, [places, imgRefs, subscribe, getLenis])
+  }, [places, stripRefs, hoveredRef, subscribe, getScroll, horizontal])
 
   return <div className="webgl-stage" ref={containerRef} aria-hidden="true" />
 }
