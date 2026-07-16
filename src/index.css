@@ -246,8 +246,6 @@ body.public {
   color: #f5f5f3;
   font-family: 'Inter Tight', system-ui, sans-serif;
   --gutter: 48px;
-  /* Vertical room the Home caption (name + country) needs below the hero. */
-  --caption-reserve: 124px;
 }
 
 /* Links never change color; hover is an opacity shift only (except where a
@@ -327,11 +325,7 @@ body.public button:focus-visible {
 .place-hero {
   display: block;
   max-width: 70vw;
-  /* 75vh is the cap. A 75vh image centred in 100vh leaves only a 12.5vh band
-     below it, which is less than the caption needs on short viewports — so
-     shrink further there to keep the name and country off the viewport edge.
-     Above ~1000px tall this resolves to the full 75vh. */
-  max-height: min(75vh, calc(100vh - var(--caption-reserve) * 2));
+  max-height: 75vh;
   width: auto;
   height: auto;
   object-fit: cover;
@@ -343,7 +337,9 @@ body.public button:focus-visible {
 }
 
 /* Absolute, so it hangs below-left of the image without pulling the image
-   off-center. */
+   off-center. Being absolute it also shrink-to-fits, which would otherwise cap
+   it at the image's width and wrap any two-word name onto a second line — so
+   the name is kept on one line and allowed to run past the image's right edge. */
 .place-caption {
   position: absolute;
   top: 100%;
@@ -352,11 +348,12 @@ body.public button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .place-name {
   margin: 0;
-  font-size: clamp(40px, 7vw, 72px);
+  font-size: 72px;
   font-weight: 400;
   line-height: 1;
 }
@@ -485,11 +482,6 @@ body.public button:focus-visible {
 @media (max-width: 768px) {
   body.public {
     --gutter: 20px;
-  }
-
-  .place-hero {
-    max-width: 86vw;
-    max-height: 60vh;
   }
 
   .photo-hero {
