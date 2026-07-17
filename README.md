@@ -18,11 +18,13 @@ Cloudinary (image hosting).
 | --------------- | ------------- | -------------------------------------------------- |
 | `/`             | Home          | Horizontal row of place strips (`Carousel`)        |
 | `/place/:slug`  | PlaceGallery  | Place name + every image uploaded for it           |
+| `/photo/:slug`  | —             | Redirects to `/place/:slug` (retired page)         |
 | `/admin`        | Admin         | Login, create/delete places, upload/manage images  |
 
 There are two public pages, not three: a strip on Home links straight to that
 place's gallery. An intermediate per-photo page used to sit between them, but it
-only ever showed the hero image again and a link onwards, so it was removed.
+only ever showed the hero image again and a link onwards, so it was removed. Its
+URL still resolves — old links redirect to the gallery rather than dead-ending.
 
 The public pages share a dark, photograph-forward design, scoped to a `public`
 class on `<body>` so it never touches Admin's light theme.
