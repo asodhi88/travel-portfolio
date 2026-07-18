@@ -227,6 +227,20 @@ button:disabled {
   padding: 0.35rem 0.4rem;
 }
 
+/* The place's name is an editable field rather than a heading, so it's sized to
+   read like the heading it replaced. */
+.place-rename {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.place-rename input {
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-width: 14rem;
+}
+
 .hero-badge {
   font-size: 0.7rem;
   color: var(--accent);

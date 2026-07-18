@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase.js'
 import { uploadToCloudinary } from '../lib/cloudinary.js'
 
 /**
- * Admin controls for a single place: image uploader (drag-drop + file picker),
- * per-image caption / set-as-hero / delete, and delete-place.
+ * Admin controls for a single place: rename, image uploader (drag-drop + file
+ * picker), per-image caption / set-as-hero / delete, and delete-place.
  *
  * @param {{ place: object, onChanged: () => void }} props
  */
@@ -13,7 +13,16 @@ export default function PlaceAdmin({ place, onChanged }) {
   const [uploads, setUploads] = useState([]) // { name, progress, error }
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState(null)
+  const [name, setName] = useState(place.name)
+  const [savingName, setSavingName] = useState(false)
   const fileInputRef = useRef(null)
+
+  // Follow the row when it changes underneath us — a reload after some other
+  // edit, or a rename that saved — without stranding whatever is half-typed in
+  // the field.
+  useEffect(() => {
+    setName(place.name)
+  }, [place.name])
 
   async function loadImages() {
     const { data, error } = await supabase
@@ -115,6 +124,29 @@ export default function PlaceAdmin({ place, onChanged }) {
     }
   }
 
+  const trimmedName = name.trim()
+  const nameChanged = trimmedName !== place.name && trimmedName.length > 0
+
+  async function saveName(e) {
+    e.preventDefault()
+    if (!nameChanged) return
+
+    setSavingName(true)
+    setError(null)
+
+    // Only the name moves. The slug is the place's URL, and rewriting it here
+    // would quietly break every existing link to this place — including the
+    // ones already out in the world.
+    const { error } = await supabase
+      .from('places')
+      .update({ name: trimmedName })
+      .eq('id', place.id)
+
+    setSavingName(false)
+    if (error) setError(error.message)
+    else onChanged()
+  }
+
   async function deletePlace() {
     if (!confirm(`Delete place "${place.name}" and all its images?`)) return
     // Remove child images first in case there is no cascade configured.
@@ -127,15 +159,26 @@ export default function PlaceAdmin({ place, onChanged }) {
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <div>
-          <h3>{place.name}</h3>
-          <div className="muted" style={{ fontSize: '0.85rem' }}>
-            /{place.slug}
-          </div>
-        </div>
+        <form className="place-rename" onSubmit={saveName}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            aria-label="Place name"
+          />
+          <button type="submit" disabled={!nameChanged || savingName}>
+            {savingName ? 'Saving…' : 'Save'}
+          </button>
+        </form>
         <button className="danger" onClick={deletePlace}>
           Delete place
         </button>
+      </div>
+
+      {/* The slug is the URL and deliberately doesn't follow a rename, so it's
+          shown plainly rather than looking like something that just changed. */}
+      <div className="muted" style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+        /place/{place.slug}
       </div>
 
       {error && <p className="error">{error}</p>}

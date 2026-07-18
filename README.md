@@ -19,7 +19,7 @@ Cloudinary (image hosting).
 | `/`             | Home          | Horizontal row of place strips (`Carousel`)        |
 | `/place/:slug`  | PlaceGallery  | Place name + every image uploaded for it           |
 | `/photo/:slug`  | —             | Redirects to `/place/:slug` (retired page)         |
-| `/admin`        | Admin         | Login, create/delete places, upload/manage images  |
+| `/admin`        | Admin         | Login, create/rename/delete places, upload images  |
 
 There are two public pages, not three: a strip on Home links straight to that
 place's gallery. An intermediate per-photo page used to sit between them, but it
@@ -144,6 +144,10 @@ trip it.
 
 - **places**: `slug`, `name`, `description`, `hero_image_url`, `sort_order`
 - **images**: `place_id`, `url`, `caption`, `sort_order`
+
+A place's `name` can be edited from Admin; its `slug` is set once, when the place
+is created, and deliberately doesn't follow a rename — the slug is the place's
+URL, and rewriting it would break every existing link to that place.
 
 ## Notes
 
