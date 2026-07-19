@@ -369,25 +369,174 @@ body.public button:focus-visible {
 
 /* ---- Chrome (Home + PlaceGallery) ---- */
 
-/* Fixed, so these stay put while the page travels underneath, and above the
-   canvas, which sits at z-index 1. The Home wordmark and the gallery's back
-   link occupy the same corner on their respective pages and read the same way,
-   so they're one rule. */
+/* One look for every piece of fixed chrome: small, uppercase, widely tracked. */
 .wordmark,
-.page-back {
-  position: fixed;
-  top: var(--gutter);
-  left: var(--gutter);
-  z-index: 3;
+.page-back,
+.site-links button,
+.site-links a {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   transition: opacity 0.3s ease;
 }
 
+/* Fixed, so these stay put while the page travels underneath, and above the
+   canvas, which sits at z-index 1. The Home wordmark and the gallery's back
+   link occupy the same corner on their respective pages, so they're one rule. */
+.wordmark,
+.page-back {
+  position: fixed;
+  top: var(--gutter);
+  left: var(--gutter);
+  z-index: 3;
+}
+
+/* The wordmark is the site's name rather than a control, so it sits a step
+   above the rest of the chrome. */
+.wordmark {
+  font-size: 16px;
+}
+
 .wordmark:hover,
 .page-back:hover {
   opacity: 0.6;
+}
+
+/* ---- Contact (bottom-right) ---- */
+
+.site-links {
+  position: fixed;
+  right: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* The email toggle is a <button> for the right semantics; this strips it back
+   to looking like the link beside it. */
+.site-links button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.site-links button:hover,
+.site-links a:hover {
+  opacity: 0.6;
+}
+
+/* Anchored above the links it opens from, and above them in the stack. */
+.contact-panel {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(var(--gutter) + 34px);
+  z-index: 4;
+  width: min(340px, calc(100vw - var(--gutter) * 2));
+  padding: 24px;
+  background: #141414;
+  border: 1px solid rgba(245, 245, 243, 0.15);
+}
+
+.contact-panel h2 {
+  margin: 0 0 16px;
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
+.contact-field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.contact-field span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
+/* The public pages set their own dark palette, so these can't inherit the
+   Admin form styling. */
+.contact-panel input,
+.contact-panel textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: #0a0a0a;
+  border: 1px solid rgba(245, 245, 243, 0.15);
+  border-radius: 0;
+  color: #f5f5f3;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.contact-panel textarea {
+  resize: none;
+}
+
+.contact-panel input:focus,
+.contact-panel textarea:focus {
+  outline: none;
+  border-color: rgba(245, 245, 243, 0.5);
+}
+
+.contact-count {
+  display: block;
+  margin-top: 4px;
+  text-align: right;
+  font-size: 10px;
+  opacity: 0.4;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.contact-panel button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f5f5f3;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.contact-panel button:hover:not(:disabled) {
+  opacity: 0.6;
+}
+
+.contact-panel button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.contact-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.7;
+}
+
+/* Underlined, because inside a paragraph there's nothing else marking it as a
+   link. */
+.contact-inline-link {
+  text-decoration: underline;
 }
 
 /* One hairline per place. It stands in for an index counter: position in the

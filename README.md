@@ -72,10 +72,13 @@ click lands on the real `<a>` underneath.
 
 ### Chrome
 
-- A wordmark, top-left, reading **ASX STILLS**, linking to `/`.
+- A wordmark, top-left, reading **ASX STILLS**, linking to `/`. It's a size up
+  from the rest of the chrome, being the site's name rather than a control.
 - A tick-mark ruler, top-centre: one thin hairline per place at low opacity,
   with the tick for the currently-centred strip highlighted. It tracks the
   horizontal scroll position and replaces the old index counter.
+- **Email** and **Instagram**, bottom-right. Instagram opens the profile in a
+  new tab; Email opens a small message box (see [Contact](#contact)).
 
 ### Fallbacks
 
@@ -114,6 +117,35 @@ consumes the vertical axis, which leaves the horizontal one free for this. The
 gesture has to clear a threshold, and only counts when it's more sideways than
 vertical, so the drift that rides along with an ordinary vertical scroll can't
 trip it.
+
+## Contact
+
+The **Email** link on Home opens a small box — name, email, message — rather
+than a `mailto:`, so the owner's address never appears in the page and can't be
+scraped off it. The message is posted to `/api/contact`, a Vercel serverless
+function that reads the address from an environment variable and sends the mail
+through [Resend](https://resend.com). The visitor's own address goes in
+`reply_to`, so replying from the inbox reaches them directly.
+
+**This needs configuring or nothing is delivered.** Set both in the Vercel
+project's Environment Variables (never in a committed file):
+
+| Variable         | Purpose                                  |
+| ---------------- | ---------------------------------------- |
+| `RESEND_API_KEY` | Resend API key                           |
+| `CONTACT_EMAIL`  | where messages should be delivered       |
+
+Until they're set, the endpoint logs the message and returns
+`{ delivered: false }`. The box reports that honestly — it tells the visitor the
+message didn't reach anyone and points them at Instagram instead, rather than
+thanking them for a message that only ever hit a server log.
+
+Note that `vercel.json` deliberately excludes `/api` from the SPA catch-all
+rewrite. Without that, `/api/contact` would be rewritten to `index.html` and the
+function would never run.
+
+`/api` routes only exist on Vercel, so the box can't send from `npm run dev` —
+it will report a failure locally.
 
 ## Setup
 

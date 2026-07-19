@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import WebGLStage from './WebGLStage.jsx'
 import { ScrollRuler } from './Ruler.jsx'
+import SiteLinks from './SiteLinks.jsx'
 import { cloudinaryImageUrl } from '../lib/cloudinary.js'
 import { isWebGLAvailable } from '../lib/webgl.js'
 import { useScroll } from '../lib/scroll.jsx'
@@ -80,6 +81,8 @@ export default function Carousel({ places }) {
       </Link>
 
       <ScrollRuler places={places} stripRefs={stripRefs} />
+
+      <SiteLinks />
 
       <div className="strip-row">
         {places.map((place) => (
