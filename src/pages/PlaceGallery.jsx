@@ -2,22 +2,15 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { cloudinaryImageUrl } from '../lib/cloudinary.js'
+import { useBackGesture } from '../lib/backGesture.js'
 import Ruler from '../components/Ruler.jsx'
+import Colophon from '../components/Colophon.jsx'
 
 // The grid's cells top out around 400 CSS px, so this covers them on a retina
 // screen with room to spare. The uploads themselves are full-resolution — 2560px
 // wide and up — and serving those raw would cost megabytes a photograph to
 // display a few hundred pixels.
 const GALLERY_WIDTH = 1200
-
-// Px a sideways gesture has to cover before it counts as "go back". High enough
-// that the horizontal wobble riding along with an ordinary vertical scroll
-// never trips it.
-const SWIPE_THRESHOLD = 90
-
-// A pause this long ends the gesture: the distance so far starts over, so two
-// unrelated nudges can't add up into a navigation.
-const SWIPE_IDLE_MS = 250
 
 /**
  * A place, and every photograph uploaded for it.
@@ -81,32 +74,7 @@ export default function PlaceGallery() {
     }
   }, [slug])
 
-  // Scrolling sideways goes back, mirroring the gesture that moved the row
-  // sideways on the way in. Lenis only ever consumes the vertical axis, so the
-  // horizontal one is free for this.
-  useEffect(() => {
-    let travelled = 0
-    let lastAt = 0
-
-    const onWheel = (event) => {
-      // A deliberate sideways gesture, not the sideways drift that rides along
-      // with a vertical one.
-      if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return
-
-      const now = performance.now()
-      if (now - lastAt > SWIPE_IDLE_MS) travelled = 0
-      lastAt = now
-
-      travelled += event.deltaX
-      if (Math.abs(travelled) < SWIPE_THRESHOLD) return
-
-      travelled = 0
-      navigate('/')
-    }
-
-    window.addEventListener('wheel', onWheel, { passive: true })
-    return () => window.removeEventListener('wheel', onWheel)
-  }, [navigate])
+  useBackGesture(() => navigate('/'))
 
   if (loading) return <div className="container muted">Loading…</div>
   if (error) return <div className="container error">{error}</div>
@@ -146,6 +114,10 @@ export default function PlaceGallery() {
           ))}
         </div>
       )}
+
+      {/* Last in the flow rather than fixed: this page scrolls, and a pinned
+          credit line would sit on top of the photographs the whole way down. */}
+      <Colophon />
     </div>
   )
 }

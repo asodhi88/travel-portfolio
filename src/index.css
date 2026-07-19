@@ -373,6 +373,7 @@ body.public button:focus-visible {
 .wordmark,
 .page-back,
 .about-toggle,
+.colophon,
 .site-links button,
 .site-links a {
   font-size: 11px;
@@ -430,13 +431,15 @@ body.public button:focus-visible {
 
    The canvas has to be in this list: where WebGL is painting, the photographs
    are on it and not in the <img>s, so fading the row alone would leave the
-   strips hanging there. The toggle is deliberately absent — it becomes "Close"
-   and has to stay. */
+   strips hanging there.
+
+   What's deliberately absent is the page's frame — the About toggle (which
+   becomes "Close"), the contact links and the colophon. Those persist across
+   the handover, so only the content inside the frame changes. */
 .home .strip-row,
 .home .webgl-stage,
 .home .wordmark,
-.home .ruler,
-.home .site-links {
+.home .ruler {
   /* Default is the return trip: wait for the view to clear, then come back. */
   transition: opacity 0.3s ease 0.25s;
 }
@@ -444,8 +447,7 @@ body.public button:focus-visible {
 .home.about-open .strip-row,
 .home.about-open .webgl-stage,
 .home.about-open .wordmark,
-.home.about-open .ruler,
-.home.about-open .site-links {
+.home.about-open .ruler {
   opacity: 0;
   /* Leaving happens first, so no delay. */
   transition: opacity 0.25s ease;
@@ -574,12 +576,10 @@ body.public button:focus-visible {
   .home .webgl-stage,
   .home .wordmark,
   .home .ruler,
-  .home .site-links,
   .home.about-open .strip-row,
   .home.about-open .webgl-stage,
   .home.about-open .wordmark,
   .home.about-open .ruler,
-  .home.about-open .site-links,
   .about-view,
   .about-view.is-open,
   .about-view.is-open .about-intro,
@@ -591,11 +591,33 @@ body.public button:focus-visible {
 
 /* ---- Contact (bottom-right) ---- */
 
+/* ---- Colophon (bottom-left) ---- */
+
+/* The opposite corner to the contact links, and part of the same persistent
+   frame — it stays put while the About view comes and goes. */
+.colophon {
+  position: fixed;
+  left: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 6;
+  margin: 0;
+  opacity: 0.4;
+}
+
+/* The gallery scrolls, so its credit line sits at the end of the content
+   instead of being pinned over the photographs. */
+.place-gallery .colophon {
+  position: static;
+  margin-top: 64px;
+}
+
+/* Above .about-view (5), like the About toggle: these are the page's frame and
+   stay reachable while the view is open. */
 .site-links {
   position: fixed;
   right: var(--gutter);
   bottom: var(--gutter);
-  z-index: 3;
+  z-index: 6;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -618,11 +640,12 @@ body.public button:focus-visible {
 }
 
 /* Anchored above the links it opens from, and above them in the stack. */
+/* Above the links that open it, so it works over the About view too. */
 .contact-panel {
   position: fixed;
   right: var(--gutter);
   bottom: calc(var(--gutter) + 34px);
-  z-index: 4;
+  z-index: 7;
   width: min(340px, calc(100vw - var(--gutter) * 2));
   padding: 24px;
   background: #141414;
@@ -838,6 +861,12 @@ body.public button:focus-visible {
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
+  }
+
+  /* Both corners can't share the bottom line on a phone — the credit line and
+     the contact links run into each other — so the credit sits above them. */
+  .colophon {
+    bottom: calc(var(--gutter) + 26px);
   }
 
   .about-intro {

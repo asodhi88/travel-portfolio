@@ -4,6 +4,7 @@ import WebGLStage from './WebGLStage.jsx'
 import { ScrollRuler } from './Ruler.jsx'
 import SiteLinks from './SiteLinks.jsx'
 import About from './About.jsx'
+import Colophon from './Colophon.jsx'
 import { cloudinaryImageUrl } from '../lib/cloudinary.js'
 import { isWebGLAvailable } from '../lib/webgl.js'
 import { useScroll } from '../lib/scroll.jsx'
@@ -95,6 +96,8 @@ export default function Carousel({ places }) {
       <About open={aboutOpen} onOpenChange={setAboutOpen} />
 
       <SiteLinks />
+
+      <Colophon />
 
       <div className="strip-row">
         {places.map((place) => (

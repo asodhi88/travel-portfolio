@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useScroll, useReducedMotion } from '../lib/scroll.jsx'
+import { useBackGesture } from '../lib/backGesture.js'
 
 /* The headline decodes ARISTIDE-style: every letter cycles through noise and
    settles left to right, the second line starting just behind the first. */
@@ -77,6 +78,10 @@ export default function About({ open, onOpenChange }) {
       else window.scrollTo(saved, 0)
     }
   }, [open, getLenis, onOpenChange])
+
+  // A sideways flick closes it, the same gesture that backs out of a gallery.
+  // Vertical is left alone so the view can still be read by scrolling down.
+  useBackGesture(() => onOpenChange(false), open)
 
   // The decode itself. Runs fresh on every open; anyone who has asked for less
   // motion gets the settled headline with no churn at all.

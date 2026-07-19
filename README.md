@@ -81,6 +81,13 @@ click lands on the real `<a>` underneath.
   **Close**, which dismisses it (see [About](#about)).
 - **Contact me** and **Instagram**, bottom-right. Instagram opens the profile in
   a new tab; Contact me opens a small message box (see [Contact](#contact)).
+- **Designed and built by Aman**, bottom-left — on every public page. It's fixed
+  on Home, but sits at the end of the content on the gallery, which scrolls and
+  would otherwise have a credit line pinned over its photographs.
+
+The bottom two and the About toggle are the page's persistent frame: they stay
+put while the About view opens and closes underneath them, so only the content
+inside the frame changes.
 
 ### Fallbacks
 
@@ -116,14 +123,18 @@ Getting back out works two ways: a **← Back** link in the top-left corner, in 
 spot the Home wordmark occupies, and a **sideways scroll** in either direction,
 mirroring the gesture that moved the row sideways on the way in. Lenis only ever
 consumes the vertical axis, which leaves the horizontal one free for this. The
-gesture has to clear a threshold, and only counts when it's more sideways than
-vertical, so the drift that rides along with an ordinary vertical scroll can't
-trip it.
+gesture lives in `useBackGesture` (`src/lib/backGesture.js`), shared with the
+About view: it has to clear a threshold, and only counts when it's more sideways
+than vertical, so the drift that rides along with an ordinary vertical scroll
+can't trip it.
 
 ## About
 
 **About me**, top-right on Home, opens a full-screen view and turns into
-**Close**. Escape closes it too, and returns focus to the control that opened it.
+**Close**. Escape closes it too, and returns focus to the control that opened
+it, as does a sideways scroll — the same `useBackGesture` flick that backs out
+of a gallery (`src/lib/backGesture.js`). Only the horizontal axis is watched, so
+the view can still be read by scrolling down.
 
 It's an overlay rather than a route: Home stays mounted underneath, so the strip
 row comes back exactly where it was instead of the carousel and WebGL stage
