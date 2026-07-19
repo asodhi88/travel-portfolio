@@ -424,9 +424,39 @@ body.public button:focus-visible {
   opacity: 0.6;
 }
 
+/* Home's content crosses out before the view arrives, and back in after it
+   leaves — the two never share the screen. Everything below is one half of that
+   handover; .about-view's transition is the other.
+
+   The canvas has to be in this list: where WebGL is painting, the photographs
+   are on it and not in the <img>s, so fading the row alone would leave the
+   strips hanging there. The toggle is deliberately absent — it becomes "Close"
+   and has to stay. */
+.home .strip-row,
+.home .webgl-stage,
+.home .wordmark,
+.home .ruler,
+.home .site-links {
+  /* Default is the return trip: wait for the view to clear, then come back. */
+  transition: opacity 0.3s ease 0.25s;
+}
+
+.home.about-open .strip-row,
+.home.about-open .webgl-stage,
+.home.about-open .wordmark,
+.home.about-open .ruler,
+.home.about-open .site-links {
+  opacity: 0;
+  /* Leaving happens first, so no delay. */
+  transition: opacity 0.25s ease;
+}
+
 /* Opaque and full-bleed, so it hides the strip row and the rest of the chrome
    rather than letting them show through. Home is untouched underneath and comes
-   back exactly as it was. */
+   back exactly as it was.
+
+   Kept mounted and hidden with visibility so it can transition out as well as
+   in; visibility also takes it out of the tab order while closed. */
 .about-view {
   position: fixed;
   inset: 0;
@@ -434,6 +464,22 @@ body.public button:focus-visible {
   background: #0a0a0a;
   padding: calc(var(--gutter) * 2.5) var(--gutter) var(--gutter);
   overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  /* Not transitioned, so it flips the instant the class does. A transparent
+     full-bleed layer still swallows clicks, and visibility here is on a delay —
+     without this, a mistimed frame would leave Home unclickable. */
+  pointer-events: none;
+  /* Out immediately; visibility flips only once the fade has finished. */
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.about-view.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  /* In after Home has cleared, which is what leaves the brief empty beat. */
+  transition: opacity 0.3s ease 0.25s, visibility 0s;
 }
 
 .about-view:focus {
@@ -448,6 +494,26 @@ body.public button:focus-visible {
   margin: 0;
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 400;
+}
+
+/* The handover is decoration; the state change is the point. Anyone who has
+   asked for less motion gets the swap without the fade. */
+@media (prefers-reduced-motion: reduce) {
+  .home .strip-row,
+  .home .webgl-stage,
+  .home .wordmark,
+  .home .ruler,
+  .home .site-links,
+  .home.about-open .strip-row,
+  .home.about-open .webgl-stage,
+  .home.about-open .wordmark,
+  .home.about-open .ruler,
+  .home.about-open .site-links,
+  .about-view,
+  .about-view.is-open {
+    transition-duration: 0s;
+    transition-delay: 0s;
+  }
 }
 
 /* ---- Contact (bottom-right) ---- */

@@ -45,6 +45,10 @@ export default function Carousel({ places }) {
 
   const { horizontal } = useScroll()
 
+  // Owned here rather than inside <About>, because Home's own content has to
+  // react to it: everything except the toggle fades out underneath the view.
+  const [aboutOpen, setAboutOpen] = useState(false)
+
   const stripRefs = useRef(new Map())
 
   // Which strip the pointer is over, as a ref rather than state: the WebGL
@@ -64,7 +68,12 @@ export default function Carousel({ places }) {
     hoveredRef.current = null
   }
 
-  const className = ['home', webgl && 'webgl-active', !horizontal && 'is-stacked']
+  const className = [
+    'home',
+    webgl && 'webgl-active',
+    !horizontal && 'is-stacked',
+    aboutOpen && 'about-open',
+  ]
     .filter(Boolean)
     .join(' ')
 
@@ -83,7 +92,7 @@ export default function Carousel({ places }) {
 
       <ScrollRuler places={places} stripRefs={stripRefs} />
 
-      <About />
+      <About open={aboutOpen} onOpenChange={setAboutOpen} />
 
       <SiteLinks />
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useScroll } from '../lib/scroll.jsx'
 
 /**
@@ -8,9 +8,14 @@ import { useScroll } from '../lib/scroll.jsx'
  * "Close", and closing puts the strip row back exactly where it was. That's why
  * this is an overlay and not a route — a route would tear down the carousel and
  * the WebGL stage and rebuild them, losing the scroll position on the way back.
+ *
+ * The view stays mounted and is hidden with visibility rather than being
+ * unmounted, so CSS can transition it out as well as in. `open` is owned by
+ * <Carousel>, which needs it too: Home's own content fades out underneath.
+ *
+ * @param {{ open: boolean, onOpenChange: (open: boolean) => void }} props
  */
-export default function About() {
-  const [open, setOpen] = useState(false)
+export default function About({ open, onOpenChange }) {
   const { getLenis } = useScroll()
 
   const panelRef = useRef(null)
@@ -38,7 +43,7 @@ export default function About() {
 
     const onKeyDown = (event) => {
       if (event.key !== 'Escape') return
-      setOpen(false)
+      onOpenChange(false)
       toggleRef.current?.focus()
     }
 
@@ -53,7 +58,7 @@ export default function About() {
       if (lenis) lenis.scrollTo(saved, { immediate: true, force: true })
       else window.scrollTo(saved, 0)
     }
-  }, [open, getLenis])
+  }, [open, getLenis, onOpenChange])
 
   return (
     <>
@@ -61,27 +66,26 @@ export default function About() {
         type="button"
         className="about-toggle"
         ref={toggleRef}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => onOpenChange(!open)}
         aria-expanded={open}
       >
         {open ? 'Close' : 'About me'}
       </button>
 
-      {open && (
-        <div
-          className="about-view"
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label="About me"
-          tabIndex={-1}
-        >
-          {/* Placeholder — real copy lands in the next pass. */}
-          <div className="about-body">
-            <h1 className="about-title">About me</h1>
-          </div>
+      <div
+        className={open ? 'about-view is-open' : 'about-view'}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="About me"
+        aria-hidden={!open}
+        tabIndex={-1}
+      >
+        {/* Placeholder — real copy lands in the next pass. */}
+        <div className="about-body">
+          <h1 className="about-title">About me</h1>
         </div>
-      )}
+      </div>
     </>
   )
 }

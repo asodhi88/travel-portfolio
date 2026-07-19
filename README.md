@@ -130,6 +130,17 @@ row comes back exactly where it was instead of the carousel and WebGL stage
 being torn down and rebuilt at position zero. "Close" rather than "Back" is the
 label for the same reason — it dismisses something, it doesn't navigate.
 
+The two states hand over rather than cutting: Home's content fades out over
+0.25s, then the view fades in over 0.3s after a matching delay, leaving a brief
+empty beat between them — and exactly reversed on the way back. The canvas is
+part of that fade, not just the strip row: where WebGL is painting, the
+photographs are on the canvas and fading the DOM row alone would leave them
+hanging there. The toggle is excluded, since it has to survive as "Close".
+
+The view is kept mounted and hidden rather than unmounted, so it can transition
+out as well as in. Its `pointer-events` are switched without a transition, so a
+closed (transparent) overlay can never sit there swallowing clicks on Home.
+
 While it's open, Lenis is stopped so the row can't scroll invisibly behind it.
 That needs care: Lenis's stylesheet puts `overflow: clip` on `<html>` whenever
 it's stopped, which collapses the document's scrollable width and forces the
