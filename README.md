@@ -152,9 +152,10 @@ The content itself is a giant two-line headline — ABOUT / ME, set in Anton, th
 one place that font exists on the site — that decodes into place once the
 crossfade hands over: every letter cycles through noise and settles left to
 right, the second line starting just behind the first. The story paragraphs
-hold back until the headline has settled, then fade in top to bottom, laid out
-against it — monument upper-left, story lower-right (stacked on narrow
-screens). The decode replays on every open, runs off timers the close tears
+hold back until the headline has settled, then fade in top to bottom. Headline
+and story share one left edge — the same gutter the wordmark and back link sit
+on — and the two type sizes are held close enough to read as one system rather
+than a poster with a caption. The decode replays on every open, runs off timers the close tears
 down, and under `prefers-reduced-motion` is skipped entirely: the headline
 renders settled and the paragraphs appear without delay. The churning letters
 are `aria-hidden`; the heading's accessible name is a plain "About me".

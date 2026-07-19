@@ -486,9 +486,10 @@ body.public button:focus-visible {
   outline: none;
 }
 
+/* Flush left rather than centred, so the headline, the intro and the story all
+   start on the same edge as the page's other chrome. */
 .about-body {
   max-width: 1100px;
-  margin: 0 auto;
 }
 
 /* Anton exists on the site for this headline alone — the one monumental moment
@@ -497,7 +498,7 @@ body.public button:focus-visible {
   margin: 0;
   font-family: 'Anton', 'Arial Narrow', sans-serif;
   font-weight: 400;
-  font-size: clamp(80px, 15vw, 180px);
+  font-size: clamp(52px, 8vw, 96px);
   line-height: 0.92;
   letter-spacing: 0.01em;
   text-transform: uppercase;
@@ -513,26 +514,27 @@ body.public button:focus-visible {
 
 .about-intro {
   margin: 32px 0 0;
-  max-width: 320px;
-  font-size: 13px;
-  line-height: 1.75;
+  max-width: 520px;
+  font-size: 17px;
+  line-height: 1.7;
 }
 
-/* Mirrors the reference's asymmetry: monument upper-left, story lower-right. */
+/* Everything shares the headline's left edge — the story reads as one column
+   under the monument rather than being flung to the opposite corner. */
 .about-rest {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 48px;
+  justify-content: flex-start;
+  margin-top: 40px;
 }
 
 .about-rest > div {
-  max-width: 360px;
+  max-width: 560px;
 }
 
 .about-rest p {
   margin: 0 0 20px;
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 17px;
+  line-height: 1.7;
 }
 
 .about-rest p:last-child {
@@ -838,10 +840,15 @@ body.public button:focus-visible {
     gap: 24px;
   }
 
-  /* Not enough width for the diagonal composition — the story just follows
-     the headline down the page. */
+  .about-intro {
+    font-size: 15px;
+  }
+
   .about-rest {
-    justify-content: flex-start;
-    margin-top: 36px;
+    margin-top: 32px;
+  }
+
+  .about-rest p {
+    font-size: 15px;
   }
 }
