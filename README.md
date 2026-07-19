@@ -152,9 +152,9 @@ The view's content is a placeholder for now.
 
 ## Contact
 
-The **Email** link on Home opens a small box — name, email, message — rather
-than a `mailto:`, so the owner's address never appears in the page and can't be
-scraped off it. The message is posted to `/api/contact`, a Vercel serverless
+**Contact me**, bottom-right on Home, opens a small box — name, email, message —
+rather than being a `mailto:`, so the owner's address never appears in the page
+and can't be scraped off it. The message is posted to `/api/contact`, a Vercel serverless
 function that reads the address from an environment variable and sends the mail
 through [Resend](https://resend.com). The visitor's own address goes in
 `reply_to`, so replying from the inbox reaches them directly.
