@@ -372,6 +372,7 @@ body.public button:focus-visible {
 /* One look for every piece of fixed chrome: small, uppercase, widely tracked. */
 .wordmark,
 .page-back,
+.about-toggle,
 .site-links button,
 .site-links a {
   font-size: 11px;
@@ -400,6 +401,53 @@ body.public button:focus-visible {
 .wordmark:hover,
 .page-back:hover {
   opacity: 0.6;
+}
+
+/* ---- About (top-right) ---- */
+
+/* Above .about-view, so the control that opened the overlay stays reachable to
+   close it again — it's the only way out besides Escape. */
+.about-toggle {
+  position: fixed;
+  top: var(--gutter);
+  right: var(--gutter);
+  z-index: 6;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f5f5f3;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.about-toggle:hover {
+  opacity: 0.6;
+}
+
+/* Opaque and full-bleed, so it hides the strip row and the rest of the chrome
+   rather than letting them show through. Home is untouched underneath and comes
+   back exactly as it was. */
+.about-view {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background: #0a0a0a;
+  padding: calc(var(--gutter) * 2.5) var(--gutter) var(--gutter);
+  overflow-y: auto;
+}
+
+.about-view:focus {
+  outline: none;
+}
+
+.about-body {
+  max-width: 600px;
+}
+
+.about-title {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 400;
 }
 
 /* ---- Contact (bottom-right) ---- */

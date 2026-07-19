@@ -77,8 +77,10 @@ click lands on the real `<a>` underneath.
 - A tick-mark ruler, top-centre: one thin hairline per place at low opacity,
   with the tick for the currently-centred strip highlighted. It tracks the
   horizontal scroll position and replaces the old index counter.
-- **Email** and **Instagram**, bottom-right. Instagram opens the profile in a
-  new tab; Email opens a small message box (see [Contact](#contact)).
+- **About me**, top-right. It opens a full-screen view over Home and becomes
+  **Close**, which dismisses it (see [About](#about)).
+- **Contact me** and **Instagram**, bottom-right. Instagram opens the profile in
+  a new tab; Contact me opens a small message box (see [Contact](#contact)).
 
 ### Fallbacks
 
@@ -117,6 +119,25 @@ consumes the vertical axis, which leaves the horizontal one free for this. The
 gesture has to clear a threshold, and only counts when it's more sideways than
 vertical, so the drift that rides along with an ordinary vertical scroll can't
 trip it.
+
+## About
+
+**About me**, top-right on Home, opens a full-screen view and turns into
+**Close**. Escape closes it too, and returns focus to the control that opened it.
+
+It's an overlay rather than a route: Home stays mounted underneath, so the strip
+row comes back exactly where it was instead of the carousel and WebGL stage
+being torn down and rebuilt at position zero. "Close" rather than "Back" is the
+label for the same reason — it dismisses something, it doesn't navigate.
+
+While it's open, Lenis is stopped so the row can't scroll invisibly behind it.
+That needs care: Lenis's stylesheet puts `overflow: clip` on `<html>` whenever
+it's stopped, which collapses the document's scrollable width and forces the
+offset to zero. The scroll position is therefore saved before stopping and
+restored after starting, or closing would always land back at the beginning of
+the row.
+
+The view's content is a placeholder for now.
 
 ## Contact
 

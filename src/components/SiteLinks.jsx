@@ -37,7 +37,9 @@ export default function SiteLinks() {
   useEffect(() => {
     if (!open) return undefined
 
-    firstFieldRef.current?.focus()
+    // preventScroll: the panel is fixed, so focusing into it would otherwise
+    // scroll the document to bring it "into view" and move the row underneath.
+    firstFieldRef.current?.focus({ preventScroll: true })
 
     const onKeyDown = (event) => {
       if (event.key !== 'Escape') return
@@ -96,7 +98,7 @@ export default function SiteLinks() {
           onClick={() => (open ? close() : setOpen(true))}
           aria-expanded={open}
         >
-          Email
+          Contact me
         </button>
         <a
           href={INSTAGRAM_URL}
