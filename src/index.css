@@ -487,13 +487,82 @@ body.public button:focus-visible {
 }
 
 .about-body {
-  max-width: 600px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.about-title {
+/* Anton exists on the site for this headline alone — the one monumental moment
+   against Inter Tight everywhere else. */
+.about-headline {
   margin: 0;
-  font-size: clamp(32px, 5vw, 48px);
+  font-family: 'Anton', 'Arial Narrow', sans-serif;
   font-weight: 400;
+  font-size: clamp(80px, 15vw, 180px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+/* Each line holds its slot even while empty, so the block never reflows as the
+   decode fills it in. */
+.about-headline span {
+  display: block;
+  min-height: 0.92em;
+  white-space: pre;
+}
+
+.about-intro {
+  margin: 32px 0 0;
+  max-width: 320px;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+/* Mirrors the reference's asymmetry: monument upper-left, story lower-right. */
+.about-rest {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 48px;
+}
+
+.about-rest > div {
+  max-width: 360px;
+}
+
+.about-rest p {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.about-rest p:last-child {
+  margin-bottom: 0;
+}
+
+/* The paragraphs hold back until the headline has decoded (~1.5s after the
+   crossfade hands over), then arrive top to bottom. Their resting opacity is
+   also their "on" state — the muted grey the site uses for supporting text. */
+.about-view .about-intro,
+.about-view .about-rest p {
+  opacity: 0;
+}
+
+.about-view.is-open .about-intro,
+.about-view.is-open .about-rest p {
+  opacity: 0.75;
+  transition: opacity 0.9s ease;
+}
+
+.about-view.is-open .about-intro {
+  transition-delay: 1.5s;
+}
+
+.about-view.is-open .about-rest p:nth-child(1) {
+  transition-delay: 1.85s;
+}
+
+.about-view.is-open .about-rest p:nth-child(2) {
+  transition-delay: 2.2s;
 }
 
 /* The handover is decoration; the state change is the point. Anyone who has
@@ -510,7 +579,9 @@ body.public button:focus-visible {
   .home.about-open .ruler,
   .home.about-open .site-links,
   .about-view,
-  .about-view.is-open {
+  .about-view.is-open,
+  .about-view.is-open .about-intro,
+  .about-view.is-open .about-rest p {
     transition-duration: 0s;
     transition-delay: 0s;
   }
@@ -765,5 +836,12 @@ body.public button:focus-visible {
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
+  }
+
+  /* Not enough width for the diagonal composition — the story just follows
+     the headline down the page. */
+  .about-rest {
+    justify-content: flex-start;
+    margin-top: 36px;
   }
 }

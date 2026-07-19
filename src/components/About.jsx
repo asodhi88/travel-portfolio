@@ -1,5 +1,20 @@
-import { useEffect, useRef } from 'react'
-import { useScroll } from '../lib/scroll.jsx'
+import { useEffect, useRef, useState } from 'react'
+import { useScroll, useReducedMotion } from '../lib/scroll.jsx'
+
+/* The headline decodes ARISTIDE-style: every letter cycles through noise and
+   settles left to right, the second line starting just behind the first. */
+const HEADLINE = ['ABOUT', 'ME']
+const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+// The Home→About crossfade takes ~0.55s; the decode waits for it to finish so
+// the letters never churn over a half-faded view.
+const SCRAMBLE_START_MS = 600
+const LINE_STAGGER_MS = 350
+const FRAME_MS = 40
+const FRAMES_PER_CHAR = 3
+
+const randomChar = () =>
+  SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
 
 /**
  * Top-right "About me", and the full-screen view it opens.
@@ -17,9 +32,12 @@ import { useScroll } from '../lib/scroll.jsx'
  */
 export default function About({ open, onOpenChange }) {
   const { getLenis } = useScroll()
+  const reducedMotion = useReducedMotion()
 
   const panelRef = useRef(null)
   const toggleRef = useRef(null)
+
+  const [lines, setLines] = useState(HEADLINE)
 
   // The row is still there underneath, so freeze it — otherwise a wheel gesture
   // over the overlay would scroll it invisibly and closing would land somewhere
@@ -60,6 +78,53 @@ export default function About({ open, onOpenChange }) {
     }
   }, [open, getLenis, onOpenChange])
 
+  // The decode itself. Runs fresh on every open; anyone who has asked for less
+  // motion gets the settled headline with no churn at all.
+  useEffect(() => {
+    if (!open) return undefined
+
+    if (reducedMotion) {
+      setLines(HEADLINE)
+      return undefined
+    }
+
+    setLines(HEADLINE.map(() => ''))
+    const timers = []
+
+    HEADLINE.forEach((target, index) => {
+      timers.push(
+        setTimeout(() => {
+          let frame = 0
+          const interval = setInterval(() => {
+            frame += 1
+            const settled = Math.floor(frame / FRAMES_PER_CHAR)
+
+            setLines((prev) => {
+              const next = [...prev]
+              next[index] =
+                settled >= target.length
+                  ? target
+                  : target
+                      .split('')
+                      .map((ch, i) => (i < settled ? ch : randomChar()))
+                      .join('')
+              return next
+            })
+
+            if (settled >= target.length) clearInterval(interval)
+          }, FRAME_MS)
+          timers.push(interval)
+        }, SCRAMBLE_START_MS + index * LINE_STAGGER_MS)
+      )
+    })
+
+    return () =>
+      timers.forEach((t) => {
+        clearTimeout(t)
+        clearInterval(t)
+      })
+  }, [open, reducedMotion])
+
   return (
     <>
       <button
@@ -81,9 +146,39 @@ export default function About({ open, onOpenChange }) {
         aria-hidden={!open}
         tabIndex={-1}
       >
-        {/* Placeholder — real copy lands in the next pass. */}
         <div className="about-body">
-          <h1 className="about-title">About me</h1>
+          {/* The label carries the accessible name; the churning letters are
+              noise a screen reader shouldn't try to keep up with. */}
+          <h1 className="about-headline" aria-label="About me">
+            {lines.map((line, i) => (
+              <span key={HEADLINE[i]} aria-hidden="true">
+                {line || ' '}
+              </span>
+            ))}
+          </h1>
+
+          <p className="about-intro">
+            What started as a borrowed camera on a whim became the thing I look
+            forward to most.
+          </p>
+
+          <div className="about-rest">
+            <div>
+              <p>
+                I borrowed my friend's camera for the first time in Yellowstone,
+                not knowing how any of it worked — no manual mode, no plan, just
+                pointing it at things. I surprised myself: the shots came out
+                better than I expected. Every trip I have taken since has been
+                built around me and my camera.
+              </p>
+              <p>
+                I shoot landscapes and nature mostly, and it's pulled me
+                outdoors more than anything else ever has. Different trips,
+                different lenses, the same quiet thrill of getting a few shots
+                right.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </>
