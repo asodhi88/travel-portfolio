@@ -11,6 +11,8 @@ Cloudinary (image hosting).
 - **lenis** for smooth (and horizontal) scrolling on the public pages
 - **@supabase/supabase-js** for data and admin auth
 - **Cloudinary** unsigned uploads for image hosting
+- **Resend** for delivering contact messages, called from a Vercel serverless
+  function rather than the browser (see [Contact](#contact))
 
 ## Routes
 
@@ -105,7 +107,8 @@ inside the frame changes.
 - **Narrow screens** (≤768px) — a plain vertical stack.
 - **`prefers-reduced-motion`** — also the vertical stack. It turns Lenis off,
   and without Lenis mapping the wheel across, a horizontal row would be
-  unreachable by an ordinary scroll gesture.
+  unreachable by an ordinary scroll gesture. The hover's vertical growth is
+  skipped as well; the colour change still carries the hover on its own.
 
 ## PlaceGallery
 
@@ -172,10 +175,11 @@ right, the second line starting just behind the first. The story paragraphs
 hold back until the headline has settled, then fade in top to bottom. Headline
 and story share one left edge — the same gutter the wordmark and back link sit
 on — and the two type sizes are held close enough to read as one system rather
-than a poster with a caption. The decode replays on every open, runs off timers the close tears
-down, and under `prefers-reduced-motion` is skipped entirely: the headline
-renders settled and the paragraphs appear without delay. The churning letters
-are `aria-hidden`; the heading's accessible name is a plain "About me".
+than a poster with a caption. The decode replays on every open, runs off timers
+the close tears down, and under `prefers-reduced-motion` is skipped entirely:
+the headline renders settled and the paragraphs appear without delay. The
+churning letters are `aria-hidden`; the heading's accessible name is a plain
+"About me".
 
 ## Contact
 
@@ -236,6 +240,11 @@ it will report a failure locally.
 - **places**: `slug`, `name`, `description`, `hero_image_url`, `sort_order`
 - **images**: `place_id`, `url`, `caption`, `sort_order`
 
+`places` also carries a `country` column. Nothing renders it any more — it fed
+the old per-strip captions, which went when the strips became unlabelled — but
+it's left in the schema rather than dropped, since dropping a column throws away
+whatever is in it.
+
 A place's `name` can be edited from Admin; its `slug` is set once, when the place
 is created, and deliberately doesn't follow a rename — the slug is the place's
 URL, and rewriting it would break every existing link to that place.
@@ -245,10 +254,13 @@ URL, and rewriting it would break every existing link to that place.
 - Strip geometry is declared once, in `src/components/Carousel.jsx`, and handed
   to CSS as custom properties, so there's one definition rather than the same
   numbers written down in two places.
-- `Ruler` and `WebGLStage` both read the strips' real boxes instead of
+- `ScrollRuler` and `WebGLStage` both read the strips' real boxes instead of
   recomputing them from that geometry, so they stay honest through any amount of
   CSS centring and padding. Measurement happens on layout changes only; each
-  frame is then arithmetic against the scroll offset.
+  frame is then arithmetic against the scroll offset. (`Ruler.jsx` exports two
+  components: `Ruler` is presentational — a count and an index — and the gallery
+  uses it directly; `ScrollRuler` is the wrapper that does the measuring and
+  owns the tracking state, so Home's carousel never re-renders on scroll.)
 - The DOM `<img>` and the WebGL texture request the exact same Cloudinary URL,
   so each photograph is downloaded and decoded once and served from cache the
   second time.
