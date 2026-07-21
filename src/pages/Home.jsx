@@ -13,10 +13,15 @@ export default function Home() {
     async function load() {
       // Just what the strips and the ruler need. The row carries no text, so
       // the description never crosses the wire.
+      // sort_order is what Admin's reorder arrows write, so the row reads in
+      // whatever order was set there. created_at only breaks ties, in case a
+      // visitor arrives before Admin has renumbered a duplicated value —
+      // without it the strips could shuffle between visits.
       const { data, error } = await supabase
         .from('places')
         .select('slug, name, hero_image_url')
         .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
 
       if (!active) return
       if (error) {

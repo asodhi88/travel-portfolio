@@ -3,12 +3,30 @@ import { supabase } from '../lib/supabase.js'
 import { uploadToCloudinary } from '../lib/cloudinary.js'
 
 /**
- * Admin controls for a single place: rename, image uploader (drag-drop + file
- * picker), per-image caption / set-as-hero / delete, and delete-place.
+ * Admin controls for a single place: rename, reorder, image uploader
+ * (drag-drop + file picker), per-image caption / set-as-hero / delete, and
+ * delete-place.
  *
- * @param {{ place: object, onChanged: () => void }} props
+ * Reordering is owned by <Admin>, which is the only thing that can see a
+ * place's neighbours; this just reports which way the user pointed.
+ *
+ * @param {{
+ *   place: object,
+ *   index: number,
+ *   total: number,
+ *   reordering: boolean,
+ *   onMove: (index: number, direction: 1 | -1) => void,
+ *   onChanged: () => void
+ * }} props
  */
-export default function PlaceAdmin({ place, onChanged }) {
+export default function PlaceAdmin({
+  place,
+  index,
+  total,
+  reordering,
+  onMove,
+  onChanged,
+}) {
   const [images, setImages] = useState([])
   const [uploads, setUploads] = useState([]) // { name, progress, error }
   const [dragging, setDragging] = useState(false)
@@ -170,9 +188,32 @@ export default function PlaceAdmin({ place, onChanged }) {
             {savingName ? 'Saving…' : 'Save'}
           </button>
         </form>
-        <button className="danger" onClick={deletePlace}>
-          Delete place
-        </button>
+        <div className="row">
+          {/* Position in this list is the order the strips appear in on the
+              home carousel, so the arrows are labelled by name — a screen
+              reader hearing "move up" ten times over learns nothing. */}
+          <button
+            className="secondary"
+            onClick={() => onMove(index, -1)}
+            disabled={index === 0 || reordering}
+            aria-label={`Move ${place.name} earlier`}
+            title="Move earlier"
+          >
+            ↑
+          </button>
+          <button
+            className="secondary"
+            onClick={() => onMove(index, 1)}
+            disabled={index === total - 1 || reordering}
+            aria-label={`Move ${place.name} later`}
+            title="Move later"
+          >
+            ↓
+          </button>
+          <button className="danger" onClick={deletePlace}>
+            Delete place
+          </button>
+        </div>
       </div>
 
       {/* The slug is the URL and deliberately doesn't follow a rename, so it's

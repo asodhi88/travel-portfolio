@@ -132,11 +132,46 @@ function CreatePlaceForm({ onCreated, onError }) {
   )
 }
 
+/**
+ * Write a new `sort_order` to each row that needs one.
+ *
+ * Supabase has no bulk "different value per row" update, and an upsert would
+ * have to carry every not-null column to avoid wiping them. The list is a
+ * handful of places, so one small request per changed row is the honest way to
+ * do it.
+ */
+/**
+ * Whether the list's `sort_order` values leave its order ambiguous.
+ *
+ * Only two things do: a missing value, which sorts to the end regardless of
+ * where the place belongs, and a duplicated one, which sorts against its twin
+ * arbitrarily and so can shuffle between loads. Gaps and a 1-based start are
+ * both fine — swapping two places trades whatever values they hold, and doesn't
+ * care what those numbers are. Renumbering a list that's merely 1-based would
+ * rewrite every row to fix nothing.
+ */
+function needsRenumbering(rows) {
+  const orders = rows.map((place) => place.sort_order)
+  return (
+    orders.some((order) => typeof order !== 'number') ||
+    new Set(orders).size !== orders.length
+  )
+}
+
+function writeOrder(rows) {
+  return Promise.all(
+    rows.map(({ id, sort_order }) =>
+      supabase.from('places').update({ sort_order }).eq('id', id)
+    )
+  )
+}
+
 export default function Admin() {
   const [session, setSession] = useState(null)
   const [checking, setChecking] = useState(true)
   const [places, setPlaces] = useState([])
   const [error, setError] = useState(null)
+  const [reordering, setReordering] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -154,8 +189,75 @@ export default function Admin() {
       .from('places')
       .select('id, slug, name, description, hero_image_url, sort_order')
       .order('sort_order', { ascending: true })
-    if (error) setError(error.message)
-    else setPlaces(data ?? [])
+      // Without a tiebreaker, rows sharing a sort_order come back in whatever
+      // order Postgres feels like — which is what makes a duplicated value
+      // shuffle the list between loads.
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    const rows = data ?? []
+
+    if (!needsRenumbering(rows)) {
+      setPlaces(rows)
+      return
+    }
+
+    // Renumber the whole list to 0,1,2… in the order it just came back in.
+    const renumbered = rows.map((place, i) => ({ ...place, sort_order: i }))
+    const drifted = renumbered.filter((place, i) => rows[i].sort_order !== i)
+
+    const failed = (await writeOrder(drifted)).find((r) => r.error)
+    if (failed) {
+      // The renumbering didn't stick, so show what the server actually has
+      // rather than a tidy list that only exists in this tab.
+      setError(failed.error.message)
+      setPlaces(rows)
+      return
+    }
+
+    setPlaces(renumbered)
+  }
+
+  /**
+   * Swap a place with the neighbour above (-1) or below (+1) it, persisting
+   * both rows before the list re-renders in the new order.
+   */
+  async function movePlace(index, direction) {
+    const target = index + direction
+    if (target < 0 || target >= places.length) return
+
+    setReordering(true)
+    setError(null)
+
+    const moving = places[index]
+    const neighbour = places[target]
+
+    const failed = (
+      await writeOrder([
+        { id: moving.id, sort_order: neighbour.sort_order },
+        { id: neighbour.id, sort_order: moving.sort_order },
+      ])
+    ).find((r) => r.error)
+
+    if (failed) {
+      setError(failed.error.message)
+      // One half of the swap may have landed, so re-read rather than guess.
+      await loadPlaces()
+      setReordering(false)
+      return
+    }
+
+    // The two rows trade both their values and their slots, so the list stays
+    // sorted by sort_order without another round trip.
+    const next = [...places]
+    next[index] = { ...neighbour, sort_order: moving.sort_order }
+    next[target] = { ...moving, sort_order: neighbour.sort_order }
+    setPlaces(next)
+    setReordering(false)
   }
 
   useEffect(() => {
@@ -195,8 +297,16 @@ export default function Admin() {
       {places.length === 0 ? (
         <p className="muted">No places yet.</p>
       ) : (
-        places.map((place) => (
-          <PlaceAdmin key={place.id} place={place} onChanged={loadPlaces} />
+        places.map((place, i) => (
+          <PlaceAdmin
+            key={place.id}
+            place={place}
+            index={i}
+            total={places.length}
+            reordering={reordering}
+            onMove={movePlace}
+            onChanged={loadPlaces}
+          />
         ))
       )}
     </div>

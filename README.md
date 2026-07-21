@@ -249,6 +249,20 @@ A place's `name` can be edited from Admin; its `slug` is set once, when the plac
 is created, and deliberately doesn't follow a rename — the slug is the place's
 URL, and rewriting it would break every existing link to that place.
 
+`sort_order` is the running order of the home carousel. Admin lists places in
+that order and gives each one up/down arrows, which swap its value with its
+neighbour's and persist both rows before the list re-renders. Home reads the
+same column, so what's arranged in Admin is what visitors scroll through.
+
+Admin renumbers the column to a clean 0,1,2… run when — and only when — the
+order is genuinely ambiguous: a `null`, which sorts to the end wherever the
+place belongs, or a duplicate, which sorts against its twin arbitrarily and can
+shuffle between loads. Gaps and a 1-based start are left alone, since a swap
+trades whatever two values it's given and doesn't care what they are;
+renumbering those would rewrite every row to fix nothing. Both queries also sort
+by `created_at` as a tiebreaker, so a duplicate can't reshuffle the page before
+Admin has had a chance to clean it up.
+
 ## Notes
 
 - Strip geometry is declared once, in `src/components/Carousel.jsx`, and handed
