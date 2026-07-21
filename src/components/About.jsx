@@ -17,14 +17,17 @@ const HEADLINE_STAGGER_MS = 350
 const HEADLINE_MS_PER_CHAR = 120
 
 /* The copy decodes the same way. These match the fade delays in the stylesheet,
-   so each block starts resolving exactly as it arrives. */
-const BODY_START_MS = 1500
-const BODY_STAGGER_MS = 350
+   so each block starts resolving exactly as it arrives — change one and change
+   the other. The first lands as the headline finishes, so nothing waits on an
+   empty page. */
+const BODY_START_MS = 1200
+const BODY_STAGGER_MS = 250
 
 // A fixed span rather than per-character: at this length that would take the
 // better part of a minute, and the paragraphs should settle together rather
-// than in order of how much they happen to say.
-const BODY_DECODE_MS = 1000
+// than in order of how much they happen to say. Short enough to read as a
+// sweep across the text — long enough to still register as one.
+const BODY_DECODE_MS = 500
 
 const INTRO =
   'What started as a borrowed camera on a whim became the thing I look forward to most.'

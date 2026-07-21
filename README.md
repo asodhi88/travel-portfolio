@@ -21,7 +21,7 @@ Cloudinary (image hosting).
 | `/`             | Home          | Horizontal row of place strips (`Carousel`)        |
 | `/place/:slug`  | PlaceGallery  | Place name + every image uploaded for it           |
 | `/photo/:slug`  | —             | Redirects to `/place/:slug` (retired page)         |
-| `/admin`        | Admin         | Login, create/rename/delete places, upload images  |
+| `/admin`        | Admin         | Login, create/rename/reorder/delete, upload images |
 
 There are two public pages, not three: a strip on Home links straight to that
 place's gallery. An intermediate per-photo page used to sit between them, but it

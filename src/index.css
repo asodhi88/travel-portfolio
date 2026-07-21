@@ -557,9 +557,13 @@ body.public button:focus-visible {
   margin-bottom: 0;
 }
 
-/* The paragraphs hold back until the headline has decoded (~1.5s after the
-   crossfade hands over), then arrive top to bottom. Their resting opacity is
-   also their "on" state — the muted grey the site uses for supporting text. */
+/* The paragraphs hold back until the headline has decoded, then arrive top to
+   bottom. Their resting opacity is also their "on" state — the muted grey the
+   site uses for supporting text.
+
+   These delays are the same numbers as BODY_START_MS and BODY_STAGGER_MS in
+   About.jsx: each block starts fading exactly as it starts decoding, so the
+   two halves of the reveal move as one. Change one and change the other. */
 .about-view .about-intro,
 .about-view .about-rest p {
   opacity: 0;
@@ -568,19 +572,21 @@ body.public button:focus-visible {
 .about-view.is-open .about-intro,
 .about-view.is-open .about-rest p {
   opacity: 0.75;
-  transition: opacity 0.9s ease;
+  /* Short enough that the fade isn't still climbing once the letters have
+     settled underneath it. */
+  transition: opacity 0.6s ease;
 }
 
 .about-view.is-open .about-intro {
-  transition-delay: 1.5s;
+  transition-delay: 1.2s;
 }
 
 .about-view.is-open .about-rest p:nth-child(1) {
-  transition-delay: 1.85s;
+  transition-delay: 1.45s;
 }
 
 .about-view.is-open .about-rest p:nth-child(2) {
-  transition-delay: 2.2s;
+  transition-delay: 1.7s;
 }
 
 /* The handover is decoration; the state change is the point. Anyone who has
