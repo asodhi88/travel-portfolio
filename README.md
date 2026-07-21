@@ -113,7 +113,7 @@ inside the frame changes.
 ## Home on a phone
 
 At ≤768px the row turns ninety degrees: the strips become short, wide slabs
-(~180px tall, 16px apart, full-bleed apart from the page gutter) stacked down
+(~120px tall, 16px apart, full-bleed apart from the page gutter) stacked down
 the page and scrolled vertically. A tall narrow strip wastes a phone's width;
 a slab uses all of it and still fits several on screen.
 

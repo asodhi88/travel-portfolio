@@ -18,7 +18,7 @@ const STRIP_GAP = 24
 /* …and on a phone, where the row becomes a vertical stack of short, wide
    slabs instead. Only the CSS reads these — the WebGL layer measures whatever
    boxes the DOM ends up with. */
-const SLAB_HEIGHT = 180
+const SLAB_HEIGHT = 120
 const SLAB_GAP = 16
 
 // Matches TEXTURE_WIDTH in WebGLStage: one URL, one download, two consumers.
