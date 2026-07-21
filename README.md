@@ -37,8 +37,14 @@ no names, no captions, no index counter anywhere on the page. Each place's name
 reaches screen readers through its link's `aria-label` and nothing else.
 
 Strips sit in greyscale at rest and turn to their real colour on hover (or
-keyboard focus). Clicking one opens that place's gallery at `/place/:slug` —
-plainly, with no transition animation.
+keyboard focus), and grow to 1.1× on the Y axis at the same time. The growth is
+height only: the width never moves, so a strip reaches over its neighbours
+instead of shoving them along the row, and nothing reflows. Both halves of the
+hover are lerped per frame on the plane itself rather than transitioned in CSS,
+since the visible strip is the canvas and not the `<img>`.
+
+Clicking one opens that place's gallery at `/place/:slug` — plainly, with no
+transition animation.
 
 ### Scrolling
 

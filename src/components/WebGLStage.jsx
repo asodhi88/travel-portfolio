@@ -45,6 +45,13 @@ const REST_GREY = 1
 // the 0.3s the CSS fallback uses.
 const GREY_LERP = 0.12
 
+// How tall a hovered strip grows. Y only — the width never moves, so the row's
+// spacing is untouched and no neighbour is ever pushed aside.
+const HOVER_SCALE_Y = 1.1
+
+// Same chase rate as the colour, so the two halves of the hover land together.
+const SCALE_LERP = 0.12
+
 const vertexShader = /* glsl */ `
   uniform float uVelocity;
   uniform float uLead;
@@ -225,6 +232,7 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
           // because that axis never moves).
           rect: { top: 0, left: 0, width: 0, height: 0 },
           grey: REST_GREY,
+          scaleY: 1,
         }
       })
 
@@ -332,6 +340,23 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
         const targetGrey = hovered === item.slug ? 0 : REST_GREY
         item.grey += (targetGrey - item.grey) * GREY_LERP
         material.uniforms.uGrey.value = item.grey
+
+        // …and taller. PlaneGeometry is centred on its own origin, so scaling Y
+        // grows the strip from the middle — it reaches up and down at once. X
+        // is deliberately untouched: the row's spacing never moves, so a strip
+        // grows over its neighbours rather than shoving them along.
+        const targetScaleY =
+          hovered === item.slug && !reducedMotionRef.current ? HOVER_SCALE_Y : 1
+        item.scaleY += (targetScaleY - item.scaleY) * SCALE_LERP
+        mesh.scale.y = item.scaleY
+
+        // The cover-crop in the fragment shader measures the plane's box, so it
+        // has to hear about the new height — otherwise the photograph stretches
+        // with the plane instead of staying in proportion.
+        material.uniforms.uPlaneSize.value.set(
+          rect.width,
+          rect.height * item.scaleY
+        )
 
         material.uniforms.uVelocity.value = smoothedVelocity
         material.uniforms.uAlpha.value = Math.min(
