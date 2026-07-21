@@ -196,14 +196,27 @@ The content itself is a giant two-line headline — ABOUT / ME, set in Anton, th
 one place that font exists on the site — that decodes into place once the
 crossfade hands over: every letter cycles through noise and settles left to
 right, the second line starting just behind the first. The story paragraphs
-hold back until the headline has settled, then fade in top to bottom. Headline
+hold back until the headline has settled, then decode the same way as they fade
+in, one after another. Headline
 and story share one left edge — the same gutter the wordmark and back link sit
 on — and the two type sizes are held close enough to read as one system rather
 than a poster with a caption. The decode replays on every open, runs off timers
 the close tears down, and under `prefers-reduced-motion` is skipped entirely:
-the headline renders settled and the paragraphs appear without delay. The
-churning letters are `aria-hidden`; the heading's accessible name is a plain
-"About me".
+the headline renders settled and the paragraphs appear without delay.
+
+Running the effect over prose rather than a headline takes some care, and
+`Scramble` (`src/components/Scramble.jsx`) is where it lives. Spaces and
+punctuation are never touched, so words keep their boundaries; case is
+preserved, so a lowercase run never fills with capitals; and each letter is
+only swapped for one of similar width. That last part isn't cosmetic — a
+paragraph's line breaks are decided by the sum of its glyph widths, and random
+letters change that sum enough to gain a line and then drop it again, jolting
+everything below as the decode finishes.
+
+None of the churn reaches assistive technology: the animating text is
+`aria-hidden` and a visually hidden copy of the real sentence sits beside it,
+so a screen reader arriving mid-decode reads the sentence rather than a second
+of noise. The heading's accessible name is likewise a plain "About me".
 
 ## Contact
 
