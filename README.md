@@ -33,7 +33,7 @@ class on `<body>` so it never touches Admin's light theme.
 
 ## Home
 
-A dense horizontal row of narrow portrait strips (~130×440px, 24px gaps), one
+A dense horizontal row of narrow portrait strips (~100×360px, 24px gaps), one
 per place, centred vertically in the viewport. The strips are **unlabelled** —
 no names, no captions, no index counter anywhere on the page. Each place's name
 reaches screen readers through its link's `aria-label` and nothing else.
@@ -113,7 +113,7 @@ inside the frame changes.
 ## Home on a phone
 
 At ≤768px the row turns ninety degrees: the strips become short, wide slabs
-(~120px tall, 16px apart, full-bleed apart from the page gutter) stacked down
+(~90px tall, 16px apart, full-bleed apart from the page gutter) stacked down
 the page and scrolled vertically. A tall narrow strip wastes a phone's width;
 a slab uses all of it and still fits several on screen.
 

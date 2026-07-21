@@ -11,22 +11,23 @@ import { useScroll } from '../lib/scroll.jsx'
 
 /* Strip geometry. Declared here and handed to CSS as custom properties, so the
    stylesheet and the ruler's arithmetic can't drift apart. */
-const STRIP_WIDTH = 130
-const STRIP_HEIGHT = 440
+const STRIP_WIDTH = 100
+const STRIP_HEIGHT = 360
 const STRIP_GAP = 24
 
 /* …and on a phone, where the row becomes a vertical stack of short, wide
    slabs instead. Only the CSS reads these — the WebGL layer measures whatever
    boxes the DOM ends up with. */
-const SLAB_HEIGHT = 120
+const SLAB_HEIGHT = 90
 const SLAB_GAP = 16
 
 // Matches TEXTURE_WIDTH in WebGLStage: one URL, one download, two consumers.
 //
 // A strip is far taller than it is wide, so a landscape photograph is scaled to
-// fill the 440px height and cropped hard on both sides — a 3:2 frame ends up
-// ~660 CSS px wide, or ~1320 device px on a retina screen. 1600 covers that
-// without the crop ever going soft.
+// fill the 360px height and cropped hard on both sides — a 3:2 frame ends up
+// ~540 CSS px wide, or ~1080 device px on a retina screen. 1600 covers that
+// without the crop ever going soft, and covers the phone's wide slabs too,
+// where the crop runs the other way.
 const HERO_WIDTH = 1600
 
 /**
