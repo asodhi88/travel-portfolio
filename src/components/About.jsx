@@ -171,16 +171,16 @@ export default function About({ open, onOpenChange }) {
             <div>
               <p>
                 I borrowed my friend's camera for the first time in Yellowstone,
-                not knowing how any of it worked — no manual mode, no plan, just
-                pointing it at things. I surprised myself: the shots came out
-                better than I expected. Every trip I have taken since has been
-                built around me and my camera.
+                not knowing how it worked or what photography is all about. I
+                just pointed it and fired the shots. I surprised myself because
+                the shots came out better than I expected. Every trip I have
+                taken since has been around me and my camera.
               </p>
               <p>
-                I shoot landscapes and nature mostly, and it's pulled me
+                I shoot landscapes and nature mostly, and it has pulled me
                 outdoors more than anything else ever has. Different trips,
-                different lenses, the same quiet thrill of getting a few shots
-                right.
+                different lenses, and the same quiet thrill of getting a few
+                shots right.
               </p>
             </div>
           </div>
