@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { useScroll, useReducedMotion } from '../lib/scroll.jsx'
+import { useMediaQuery, COMPACT_QUERY } from '../lib/media.js'
 import { cloudinaryImageUrl } from '../lib/cloudinary.js'
 
 /* --------------------------------------------------------------------------
@@ -161,6 +162,14 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
   // scene.
   const reducedMotionRef = useRef(reducedMotion)
   reducedMotionRef.current = reducedMotion
+
+  // Whether this is a phone, read from the media query rather than inferred
+  // from the scroll axis: a wide screen with prefers-reduced-motion also stacks
+  // the strips, but it still has a pointer and should keep hovering. Held in a
+  // ref for the same reason as above — crossing the breakpoint mustn't tear the
+  // scene down and rebuild it.
+  const compactRef = useRef(false)
+  compactRef.current = useMediaQuery(COMPACT_QUERY)
 
   useEffect(() => {
     const container = containerRef.current
@@ -326,6 +335,28 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
       const halfH = window.innerHeight / 2
       const hovered = hoveredRef.current
 
+      // Touch has no hover, so on a phone the lit slab is whichever one is
+      // nearest the middle of the viewport — it hands over as the page scrolls.
+      // rect.top is already document-space on this axis, so the comparison is
+      // the same subtraction the positioning below does.
+      let focused = hovered
+      if (compactRef.current) {
+        const viewportCentre = scroll + halfH
+        let nearest = Infinity
+        focused = null
+
+        for (const item of items) {
+          if (item.texture === null || item.rect.height === 0) continue
+
+          const centre = item.rect.top + item.rect.height / 2
+          const distance = Math.abs(centre - viewportCentre)
+          if (distance < nearest) {
+            nearest = distance
+            focused = item.slug
+          }
+        }
+      }
+
       for (const item of items) {
         const { rect, mesh, material } = item
 
@@ -336,8 +367,9 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
         mesh.position.x = rect.left - scrollX + rect.width / 2 - halfW
         mesh.position.y = halfH - (rect.top - scrollY + rect.height / 2)
 
-        // Full colour under the pointer, grey everywhere else.
-        const targetGrey = hovered === item.slug ? 0 : REST_GREY
+        // Full colour on the focused strip — under the pointer on a desktop,
+        // nearest the viewport's middle on a phone — and grey everywhere else.
+        const targetGrey = focused === item.slug ? 0 : REST_GREY
         item.grey += (targetGrey - item.grey) * GREY_LERP
         material.uniforms.uGrey.value = item.grey
 
@@ -345,8 +377,15 @@ export default function WebGLStage({ places, stripRefs, hoveredRef }) {
         // grows the strip from the middle — it reaches up and down at once. X
         // is deliberately untouched: the row's spacing never moves, so a strip
         // grows over its neighbours rather than shoving them along.
+        // Hover-specific, so a phone never gets it: there's nothing to hover,
+        // and a slab that grew whenever it drifted past the middle would just
+        // be noise.
         const targetScaleY =
-          hovered === item.slug && !reducedMotionRef.current ? HOVER_SCALE_Y : 1
+          !compactRef.current &&
+          hovered === item.slug &&
+          !reducedMotionRef.current
+            ? HOVER_SCALE_Y
+            : 1
         item.scaleY += (targetScaleY - item.scaleY) * SCALE_LERP
         mesh.scale.y = item.scaleY
 

@@ -104,11 +104,35 @@ inside the frame changes.
   why the shader desaturates *after* its sRGB conversion, using the same
   weights that filter uses: so both paths agree rather than merely resemble
   each other.
-- **Narrow screens** (≤768px) — a plain vertical stack.
+- **Narrow screens** (≤768px) — see [Home on a phone](#home-on-a-phone).
 - **`prefers-reduced-motion`** — also the vertical stack. It turns Lenis off,
   and without Lenis mapping the wheel across, a horizontal row would be
   unreachable by an ordinary scroll gesture. The hover's vertical growth is
   skipped as well; the colour change still carries the hover on its own.
+
+## Home on a phone
+
+At ≤768px the row turns ninety degrees: the strips become short, wide slabs
+(~180px tall, 16px apart, full-bleed apart from the page gutter) stacked down
+the page and scrolled vertically. A tall narrow strip wastes a phone's width;
+a slab uses all of it and still fits several on screen.
+
+They're the same Three.js planes, laid out along Y and tracked against the
+vertical scroll. The bend follows the scroll axis without any special-casing —
+the shader already picks its axis from `uHorizontal`, which is off here — and
+the cover-crop reads whatever box the DOM ends up with, so the photographs
+re-crop to the wider frame on their own.
+
+Touch has no hover, so nothing waits for a pointer: the slab nearest the middle
+of the viewport is the one in colour, and it hands over as the page scrolls.
+The hover-only vertical growth is skipped entirely — a slab that swelled every
+time it drifted past the middle would just be noise.
+
+That branch keys off the `(max-width: 768px)` media query rather than the
+scroll axis. Both look the same from inside the render loop, but a wide screen
+with `prefers-reduced-motion` also stacks its strips, and it still has a
+pointer — so it keeps hovering, and keeps the portrait sizing, while a phone
+gets the slabs.
 
 ## PlaceGallery
 

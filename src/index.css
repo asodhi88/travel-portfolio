@@ -777,9 +777,11 @@ body.public button:focus-visible {
 }
 
 /* ---- Home, stacked ----
-   Narrow screens (and prefers-reduced-motion, which turns Lenis off) get the
-   plain vertical stack instead. Same strips, same dimming, ordinary downward
-   scroll. */
+   Narrow screens, and prefers-reduced-motion on a wide one — both turn the
+   sideways row into an ordinary downward scroll. The sizing below is the
+   reduced-motion case: portrait strips, just stacked. Phones override it
+   further down with wide slabs, which is why that lives in the media query
+   and not here. */
 .home.is-stacked {
   display: block;
 }
@@ -861,6 +863,24 @@ body.public button:focus-visible {
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
+  }
+
+  /* On a phone the row becomes short, wide slabs — full-bleed apart from the
+     page's own gutter — rather than portrait strips. A tall narrow strip wastes
+     a phone's width; a slab uses all of it and still fits several on screen. */
+  .home.is-stacked .strip-row {
+    align-items: stretch;
+    gap: var(--slab-gap);
+    padding-inline: var(--gutter);
+    /* Clears the fixed wordmark and ruler above, and the credit line and
+       contact links below. */
+    padding-block: calc(var(--gutter) * 3) calc(var(--gutter) * 3.5);
+    margin-inline: 0;
+  }
+
+  .home.is-stacked .strip {
+    width: auto;
+    height: var(--slab-h);
   }
 
   /* Both corners can't share the bottom line on a phone — the credit line and

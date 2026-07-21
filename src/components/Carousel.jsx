@@ -15,6 +15,12 @@ const STRIP_WIDTH = 130
 const STRIP_HEIGHT = 440
 const STRIP_GAP = 24
 
+/* …and on a phone, where the row becomes a vertical stack of short, wide
+   slabs instead. Only the CSS reads these — the WebGL layer measures whatever
+   boxes the DOM ends up with. */
+const SLAB_HEIGHT = 180
+const SLAB_GAP = 16
+
 // Matches TEXTURE_WIDTH in WebGLStage: one URL, one download, two consumers.
 //
 // A strip is far taller than it is wide, so a landscape photograph is scaled to
@@ -85,6 +91,8 @@ export default function Carousel({ places }) {
         '--strip-w': `${STRIP_WIDTH}px`,
         '--strip-h': `${STRIP_HEIGHT}px`,
         '--strip-gap': `${STRIP_GAP}px`,
+        '--slab-h': `${SLAB_HEIGHT}px`,
+        '--slab-gap': `${SLAB_GAP}px`,
       }}
     >
       <Link to="/" className="wordmark">
