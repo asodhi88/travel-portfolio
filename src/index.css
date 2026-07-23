@@ -827,6 +827,17 @@ body.public button:focus-visible {
   padding: calc(var(--gutter) * 2.5) var(--gutter) var(--gutter);
 }
 
+/* The gallery scrolls its content in normal flow, which would paint behind the
+   fixed dot canvas (a positioned layer). Lift the content above it. The fixed
+   chrome (.page-back, .ruler) already sits above through its own z-index. */
+.place-gallery > .gallery-header,
+.place-gallery > .gallery-grid,
+.place-gallery > .muted,
+.place-gallery > .colophon {
+  position: relative;
+  z-index: 1;
+}
+
 /* A gap rather than a margin on the title, so a place with no description
    doesn't leave a hole above its photographs. */
 .gallery-header {
@@ -940,15 +951,17 @@ body.public button:focus-visible {
   font-family: 'Space Grotesk', 'Inter Tight', system-ui, sans-serif;
 }
 
-/* The dot field, behind everything and click-through. A negative index keeps it
-   under ordinary in-flow content too, so the scrolling gallery reads over it
-   without every block needing its own stacking order. */
+/* The dot field: a fixed, click-through layer that paints just above the page's
+   black background. On the gallery, the scrolling content is lifted above it
+   (see .place-gallery content below); on Home the tiles and header already sit
+   above via their own z-index. A negative index can't be used — :root carries an
+   opaque background, so the body's dark fill would paint over it. */
 .stills-dots {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
 }
 
