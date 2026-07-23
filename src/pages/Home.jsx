@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import Carousel from '../components/Carousel.jsx'
+import StillsHome from '../components/StillsHome.jsx'
 
 export default function Home() {
   const [places, setPlaces] = useState([])
@@ -43,5 +43,5 @@ export default function Home() {
   if (places.length === 0)
     return <div className="container muted">No places yet.</div>
 
-  return <Carousel places={places} />
+  return <StillsHome places={places} />
 }

@@ -921,3 +921,330 @@ body.public button:focus-visible {
     font-size: 15px;
   }
 }
+
+/* ==========================================================================
+   Home — ASX Stills field (design variant 1A)
+   A dark, single-screen board: an interactive dot field with a row of photo
+   tiles floating over it. Everything is scoped under .stills so it overrides
+   the shared public chrome here without touching PlaceGallery or Admin.
+   ========================================================================== */
+
+/* Full-viewport and out of flow, so the board is sized to the window and the
+   page never scrolls. Its own type is Space Grotesk; the reused chrome pins
+   itself back to the site's Inter Tight further down. */
+.stills {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0a0a0a;
+  font-family: 'Space Grotesk', 'Inter Tight', system-ui, sans-serif;
+}
+
+/* The dot field, behind everything and click-through. */
+.stills-dots {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---- Header: wordmark (left), barcode ticks (centre) ----
+   The third corner — "About me" — is the reused .about-toggle, styled into a
+   pill below and fixed to the top-right on its own. */
+.stills-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  padding: 30px var(--gutter);
+  /* The dots underneath stay interactive; only the wordmark takes clicks. */
+  pointer-events: none;
+}
+
+.stills-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.stills-brand:hover {
+  opacity: 0.7;
+}
+
+.stills-mark {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stills-mark-asx {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.stills-mark-stills {
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: #c4c4c4;
+}
+
+.stills-mark-no {
+  align-self: flex-start;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #5a5a5a;
+}
+
+/* Centred in the header regardless of the wordmark's width. */
+.stills-ticks {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stills-ticks i {
+  width: 2px;
+  height: 9px;
+  background: #3a3a3a;
+}
+
+.stills-ticks i.is-tall {
+  height: 14px;
+  background: #e8e8e8;
+}
+
+/* ---- Tile row ----
+   A compact block floating centred in the field, deliberately small so the dead
+   space around it breathes — the expand on hover does the work of showing a
+   tile at size. Each tile is an equal flex share until one is hovered. */
+.stills-row {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(780px, calc(100vw - var(--gutter) * 2));
+  height: clamp(200px, 44vh, 340px);
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+
+.stills-tile {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #232323;
+  cursor: pointer;
+  /* The striped fill shows through until (or unless) a photograph loads. */
+  background: repeating-linear-gradient(
+    135deg,
+    #141414 0 11px,
+    #181818 11px 22px
+  );
+  /* flex-grow is the animated property: the tile eases open on hover. */
+  transition: flex-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stills-tile:hover,
+.stills-tile:focus-visible {
+  flex-grow: 5.5;
+}
+
+/* At rest the row reads as a monochrome contact sheet; the tile under the
+   pointer is the only one in colour — the same idea as the old strip row. */
+.stills-tile-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.85);
+  transition: filter 0.55s ease;
+}
+
+.stills-tile:hover .stills-tile-img,
+.stills-tile:focus-visible .stills-tile-img {
+  filter: grayscale(0) brightness(1);
+}
+
+/* Scrim and caption arrive together as the tile opens. */
+.stills-tile-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent 42%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.stills-tile-cap {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 15px;
+  z-index: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ededed;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.stills-tile:hover .stills-tile-scrim,
+.stills-tile:focus-visible .stills-tile-scrim {
+  opacity: 1;
+}
+
+.stills-tile:hover .stills-tile-cap,
+.stills-tile:focus-visible .stills-tile-cap {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Reused chrome, restyled for the board ----
+   The About toggle becomes the header's pill; the credit line and contact
+   links become the mono footer. These override the shared rules only within
+   .stills. */
+.stills .about-toggle {
+  top: 30px;
+  right: var(--gutter);
+  padding: 8px 18px;
+  border: 1px solid #333;
+  border-radius: 20px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: #e8e8e8;
+}
+
+.stills .about-toggle:hover {
+  opacity: 1;
+  border-color: #555;
+  color: #ffffff;
+}
+
+.stills .colophon,
+.stills .site-links a,
+.stills .site-links button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #6a6a6a;
+  opacity: 1;
+}
+
+.stills .site-links a:hover,
+.stills .site-links button:hover {
+  opacity: 1;
+  color: #e8e8e8;
+}
+
+/* The About overlay and the contact form keep the site's reading typeface —
+   only the board's own chrome is Space Grotesk / mono. */
+.stills .about-view,
+.stills .contact-panel {
+  font-family: 'Inter Tight', system-ui, sans-serif;
+}
+
+/* ---- About handover ----
+   Everything inside the frame fades out as the About view arrives, and back in
+   after it leaves; the wordmark, credit line and contact links persist. Mirrors
+   the timing of the old carousel's handover. */
+.stills-header,
+.stills-row,
+.stills-dots {
+  transition: opacity 0.3s ease 0.25s;
+}
+
+.stills.about-open .stills-header,
+.stills.about-open .stills-row,
+.stills.about-open .stills-dots {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* ---- Home board, compact ----
+   The row of thin tiles has no meaning on a phone — there's no cursor to open
+   them and each would be a sliver — so it becomes a vertical, scrollable stack
+   of slabs with their captions always showing. */
+@media (max-width: 768px) {
+  .stills-header {
+    padding: 22px var(--gutter);
+  }
+
+  .stills-ticks {
+    display: none;
+  }
+
+  .stills-mark-asx,
+  .stills-mark-stills {
+    font-size: 16px;
+  }
+
+  .stills .about-toggle {
+    top: 22px;
+  }
+
+  .stills-row {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 84px;
+    bottom: 76px;
+    width: auto;
+    height: auto;
+    transform: none;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+  }
+
+  .stills-tile {
+    flex: 0 0 auto;
+    height: 76px;
+  }
+
+  .stills-tile:hover,
+  .stills-tile:focus-visible {
+    flex-grow: 0;
+  }
+
+  .stills-tile-img {
+    filter: grayscale(0) brightness(0.92);
+  }
+
+  .stills-tile-scrim,
+  .stills-tile-cap {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The handover is decoration; anyone who has asked for less motion gets the
+   swap without the fade, matching the rest of the public pages. */
+@media (prefers-reduced-motion: reduce) {
+  .stills-header,
+  .stills-row,
+  .stills-dots,
+  .stills.about-open .stills-header,
+  .stills.about-open .stills-row,
+  .stills.about-open .stills-dots {
+    transition-duration: 0s;
+    transition-delay: 0s;
+  }
+}
