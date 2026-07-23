@@ -5,6 +5,7 @@ import { cloudinaryImageUrl } from '../lib/cloudinary.js'
 import { useBackGesture } from '../lib/backGesture.js'
 import Ruler from '../components/Ruler.jsx'
 import Colophon from '../components/Colophon.jsx'
+import DotField from '../components/DotField.jsx'
 
 // The grid's cells top out around 400 CSS px, so this covers them on a retina
 // screen with room to spare. The uploads themselves are full-resolution — 2560px
@@ -85,6 +86,8 @@ export default function PlaceGallery() {
 
   return (
     <div className="place-gallery">
+      <DotField />
+
       <Link to="/" className="page-back">
         ← Back
       </Link>
